@@ -25,17 +25,30 @@ export default function MainMenu({ setScreen, setGameMode, setMatchId, theme, au
         if (error) throw error;
         if (data) {
           const now = Date.now();
-          // Cleanup phòng rác: lọc phòng waiting quá 30 phút
-          const staleIds = data
-            .filter(m => m.status === 'waiting' && (now - new Date(m.created_at).getTime()) > 30 * 60 * 1000)
+          const STALE_WAITING_MS = 30 * 60 * 1000;  // 30 phut
+          const STALE_PLAYING_MS = 60 * 60 * 1000;  // 60 phut — phong playing bi bo roi
+
+          // Cleanup phong waiting qua 30 phut
+          const staleWaiting = data
+            .filter(m => m.status === 'waiting' && (now - new Date(m.created_at).getTime()) > STALE_WAITING_MS)
             .map(m => m.id);
-          if (staleIds.length > 0) {
-            await supabase.from('matches').update({ status: 'cancelled' }).in('id', staleIds);
+
+          // Cleanup phong playing qua 60 phut (updated_at khong doi = bi bo roi)
+          const stalePlaying = data
+            .filter(m => m.status === 'playing' && (now - new Date(m.updated_at ?? m.created_at).getTime()) > STALE_PLAYING_MS)
+            .map(m => m.id);
+
+          const allStale = [...staleWaiting, ...stalePlaying];
+          if (allStale.length > 0) {
+            await supabase.from('matches').update({ status: 'cancelled' }).in('id', allStale);
           }
+
           setWaitingRooms(data.filter(m =>
-            m.status === 'waiting' && (now - new Date(m.created_at).getTime()) < 30 * 60 * 1000
+            m.status === 'waiting' && (now - new Date(m.created_at).getTime()) < STALE_WAITING_MS
           ));
-          setLiveGames(data.filter(m => m.status === 'playing'));
+          setLiveGames(data.filter(m =>
+            m.status === 'playing' && (now - new Date(m.updated_at ?? m.created_at).getTime()) < STALE_PLAYING_MS
+          ));
         }
       } catch (e) { console.error('Lỗi dữ liệu sảnh:', e.message); }
       finally { setIsLoading(false); }

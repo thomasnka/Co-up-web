@@ -12,7 +12,7 @@
   transform-origin: center;
 }
 
-/* ── CHECK WARNING — chỉ rung nhẹ, không scale ───────────────────────── */
+/* ── CHECK WARNING ────────────────────────────────────────────────────── */
 @keyframes shake-check {
   0%   { transform: translateX(0); }
   20%  { transform: translateX(-4px); }
@@ -26,9 +26,17 @@
   transform-origin: center;
 }
 
+/* ── PIECE MOVE ANIMATION ─────────────────────────────────────────────── */
+/* SVG <g> elements chua support CSS transition truc tiep cho cx/cy        */
+/* Dung CSS transition tren transform de tao hieu ung move muot hon        */
+.chess-piece {
+  transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+
 /* ── RESULT BOTTOM SHEET ──────────────────────────────────────────────── */
 @keyframes slide-up {
-  from { transform: translateY(100%); opacity: 0; }
+  from { transform: translateY(30px); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }
 }
 .result-sheet {
@@ -37,9 +45,30 @@
 
 /* ── CONFIRM POPUP ────────────────────────────────────────────────────── */
 @keyframes pop-in {
-  from { transform: scale(0.93); opacity: 0; }
-  to   { transform: scale(1);    opacity: 1; }
+  from { transform: scale(0.9); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
 }
 .confirm-popup {
   animation: pop-in 200ms cubic-bezier(0.34, 1.1, 0.64, 1) forwards;
 }
+
+/* ── BOARD HIGHLIGHT ANIMATION ────────────────────────────────────────── */
+@keyframes highlight-fade {
+  from { opacity: 0.5; }
+  to   { opacity: 0.25; }
+}
+.last-move-highlight {
+  animation: highlight-fade 0.3s ease-out forwards;
+}
+
+/* ── MOBILE TOUCH ─────────────────────────────────────────────────────── */
+/* Ngan scroll khi choi tren mobile */
+svg {
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── SCROLLBAR STYLE ──────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }

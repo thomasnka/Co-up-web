@@ -66,11 +66,17 @@ export function useAuth() {
     let mounted = true;
 
     const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (mounted) {
-        setUser(session?.user ?? null);
-        if (session?.user) await fetchProfile(session.user.id);
-        setIsLoading(false);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (mounted) {
+          setUser(session?.user ?? null);
+          if (session?.user) await fetchProfile(session.user.id);
+        }
+      } catch (e) {
+        console.error('[useAuth] getSession error:', e.message);
+      } finally {
+        // Luôn tắt loading dù có lỗi hay không
+        if (mounted) setIsLoading(false);
       }
     };
 

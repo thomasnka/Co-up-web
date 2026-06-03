@@ -1,0 +1,39 @@
+# =============================================================================
+# FILE: cloudflare-worker/wrangler.toml
+# Deploy: cd cloudflare-worker && npx wrangler deploy
+# =============================================================================
+
+name       = "co-up-game-server"
+main       = "src/game-room.js"
+account_id = "6e1b15c81e38a9d47166902e49557e1b"
+
+compatibility_date  = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# ── Durable Objects ────────────────────────────────────────────────────────────
+[[durable_objects.bindings]]
+name       = "GAME_ROOM"         # env.GAME_ROOM trong worker
+class_name = "GameRoom"          # class export trong game-room.js
+
+[[migrations]]
+tag  = "v1"
+new_sqlite_classes = ["GameRoom"]
+
+# ── Environment variables (non-secret) ────────────────────────────────────────
+[vars]
+ENVIRONMENT = "production"
+
+# ── Secrets (set qua CLI, không commit vào git) ────────────────────────────────
+# npx wrangler secret put SUPABASE_URL
+# npx wrangler secret put SUPABASE_SERVICE_KEY
+#
+# SUPABASE_URL        = "https://hwsuphroilmzqclozpkp.supabase.co"
+# SUPABASE_SERVICE_KEY = <service_role key từ Supabase dashboard>
+
+# ── Routes (sau khi có domain) ────────────────────────────────────────────────
+# routes = [{ pattern = "ws.couppro.us/*", zone_name = "couppro.us" }]
+
+# ── Dev server ────────────────────────────────────────────────────────────────
+[dev]
+port          = 8787
+local_protocol = "http"

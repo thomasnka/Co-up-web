@@ -163,9 +163,93 @@ export class GameRoom {
       }
 
       case 'move': {
-        // msg: { type, state: GameState }
-        // Relay sang đối thủ + spectators (không validate — trust client)
-        this._broadcast({ type: 'move', state: msg.state, from: playerId }, playerId);
+        // S2 FIX: validate sequence_id để chống race condition
+        // S1 FIX: strip identity quân úp trước khi broadcast cho đối thủ
+        const session = this.sessions.get(playerId);
+        if (!session || session.role === 'spectator') break;
+
+        const roomMeta = await this.state.storage.get('roomMeta');
+        if (!roomMeta || roomMeta.status !== 'playing') break;
+
+        // S2: kiểm tra sequence_id tăng đơn điệu (chống duplicate/race)
+        const lastSeq = (await this.state.storage.get('lastSeq')) ?? 0;
+        if (msg.seq !== undefined && msg.seq <= lastSeq) {
+          ws.send(JSON.stringify({ type: 'move_rejected', reason: 'stale_sequence', seq: msg.seq }));
+          break;
+        }
+        if (msg.seq !== undefined) {
+          await this.state.storage.put('lastSeq', msg.seq);
+        }
+
+        // S1: strip hidden piece identity trước khi relay
+        // opponent chỉ nhận được { id, row, col, isHidden: true } — không có type/name/color thật
+        const safeState = msg.state ? {
+          ...msg.state,
+          pieces: msg.state.pieces?.map(p => p.isHidden
+            ? { id: p.id, row: p.row, col: p.col, isHidden: true, startingRole: undefined, type: undefined, name: undefined, color: undefined }
+            : p
+          ),
+        } : msg.state;
+
+        // F1: lưu state vào storage để recovery sau reconnect
+        if (msg.state) {
+          await this.state.storage.put('gameState', msg.state);
+        }
+
+        this._broadcast({ type: 'move', state: safeState, from: playerId, seq: msg.seq }, playerId);
+        break;
+      }
+
+      case 'reveal': {
+        // S1 FIX: chỉ server mới được xác nhận identity quân vừa lật
+        // Client gửi: { type: 'reveal', pieceId, row, col } — không có identity
+        // Server đọc từ storage (được set lúc init) và broadcast identity thật
+        const session = this.sessions.get(playerId);
+        if (!session || session.role === 'spectator') break;
+
+        const hiddenMap = await this.state.storage.get('hiddenPieces') ?? {};
+        const pieceKey = `${msg.pieceId}`;
+        const trueIdentity = hiddenMap[pieceKey];
+
+        if (!trueIdentity) {
+          // Piece không có trong map → đã lật trước đó hoặc invalid
+          ws.send(JSON.stringify({ type: 'reveal_rejected', pieceId: msg.pieceId }));
+          break;
+        }
+
+        // Xóa khỏi map sau khi lật
+        delete hiddenMap[pieceKey];
+        await this.state.storage.put('hiddenPieces', hiddenMap);
+
+        // Broadcast identity thật cho TẤT CẢ (kể cả người lật)
+        this._broadcastAll({
+          type: 'piece_revealed',
+          pieceId: msg.pieceId,
+          row: msg.row,
+          col: msg.col,
+          trueType:  trueIdentity.type,
+          trueName:  trueIdentity.name,
+          trueColor: trueIdentity.color,
+        });
+        break;
+      }
+
+      case 'init_hidden_pieces': {
+        // S1 FIX: Host gửi hidden piece map lúc game bắt đầu
+        // Chỉ được gọi 1 lần, chỉ host mới được gọi
+        const session = this.sessions.get(playerId);
+        if (!session || session.role !== 'host') break;
+
+        const existing = await this.state.storage.get('hiddenPieces');
+        if (existing && Object.keys(existing).length > 0) break; // đã init rồi
+
+        // msg.pieces = [{ id, type, name, color, row, col }] — chỉ quân úp
+        const hiddenMap = {};
+        (msg.pieces ?? []).forEach(p => {
+          hiddenMap[String(p.id)] = { type: p.type, name: p.name, color: p.color };
+        });
+        await this.state.storage.put('hiddenPieces', hiddenMap);
+        ws.send(JSON.stringify({ type: 'hidden_pieces_stored', count: Object.keys(hiddenMap).length }));
         break;
       }
 
@@ -202,10 +286,18 @@ export class GameRoom {
       }
 
       case 'ping': {
-        // Cập nhật lastPong
         const session = this.sessions.get(playerId);
         if (session) session.lastPong = Date.now();
         ws.send(JSON.stringify({ type: 'pong' }));
+        break;
+      }
+
+      case 'request_state_recovery': {
+        // F1 FIX: client reconnect và yêu cầu state hiện tại
+        const savedState = await this.state.storage.get('gameState');
+        if (savedState) {
+          ws.send(JSON.stringify({ type: 'state_recovery', state: savedState }));
+        }
         break;
       }
 

@@ -71,7 +71,7 @@ export default function GameBoard({
   const handleExitGame = useCallback(async () => {
     if (isSpectator) { setScreen('menu'); return; }
     if (gameStatus === 'playing' && !isWaitingForOpponent) {
-      if (window.confirm('Thoat tran giua chung ban se bi xu thua. Xac nhan thoat?')) {
+      if (window.confirm('Thoát trận giữa chừng bạn sẽ bị xử thua. Xác nhận thoát?')) {
         if (matchId && !isSpectator) await syncResult(`resign_${currentTurn}`);
         setScreen('menu');
       }
@@ -217,4 +217,7 @@ export default function GameBoard({
 
     </div>
   );
-}
+}cd /workspaces/Co-up-web
+git add src/hooks/useWebSocket.js src/hooks/useGameState.js src/pages/GameBoard.jsx
+git commit -m "fix: iOS Safari WS reconnect + popup Vietnamese diacritics"
+git push

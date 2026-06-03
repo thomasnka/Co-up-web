@@ -35,6 +35,7 @@ export default function GameBoard({
 
   const { matchData, isWaiting, isSpectator, isSyncing,
           myColor, wsStatus, reconnectCount,
+          opponentDisconnected,
           getIsMyTurn, syncMove, syncResult, requestDraw, respondDraw } = mp;
 
   const isWaitingForOpponent = isWaiting;
@@ -69,8 +70,10 @@ export default function GameBoard({
   const {
     pieces, currentTurn, historyLog, capturedPieces, lastMove,
     shakingPieceId, selectedPiece, kingInCheckId, gameStatus, timeLeft,
+    validMoves, movedPieceId,
     initGame, handleInteraction, handleDraw, handleResign,
     formatTime, activateDemo, getResultMessage, acceptDraw, isDemoMode,
+    registerTimerDisplay,
   } = game;
 
   // BUG-4 FIX: sync localDemoMode khi game.isDemoMode thay đổi
@@ -81,7 +84,7 @@ export default function GameBoard({
   const handleExitGame = useCallback(async () => {
     if (isSpectator) { setScreen('menu'); return; }
     if (gameStatus === 'playing' && !isWaitingForOpponent) {
-      if (window.confirm('Thoat tran giua chung ban se bi xu thua. Xac nhan thoat?')) {
+      if (window.confirm('Thoát trận giữa chừng bạn sẽ bị xử thua. Xác nhận thoát?')) {
         if (matchId && !isSpectator) await syncResult(`resign_${currentTurn}`);
         setScreen('menu');
       }
@@ -124,6 +127,32 @@ export default function GameBoard({
         <DrawBanner theme={theme} onAccept={handleAcceptDraw} onDecline={handleDeclineDraw} />
       )}
 
+      {/* U1: Opponent disconnect banner */}
+      {opponentDisconnected && gameStatus === 'playing' && (
+        <div style={{
+          position: 'absolute', top: '60px', left: '50%', transform: 'translateX(-50%)',
+          zIndex: 45, backgroundColor: '#f57c00', color: '#fff',
+          padding: '8px 18px', borderRadius: '20px', fontSize: '0.82rem',
+          fontWeight: 'bold', boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          whiteSpace: 'nowrap', pointerEvents: 'none',
+        }}>
+          ⚠️ Đối thủ mất kết nối — đang chờ reconnect...
+        </div>
+      )}
+
+      {/* Reconnect banner */}
+      {(wsStatus === 'reconnecting' || wsStatus === 'connecting') && matchId && (
+        <div style={{
+          position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)',
+          zIndex: 45, backgroundColor: '#455a64', color: '#fff',
+          padding: '8px 18px', borderRadius: '20px', fontSize: '0.82rem',
+          fontWeight: 'bold', boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          whiteSpace: 'nowrap', pointerEvents: 'none',
+        }}>
+          ⚡ Đang kết nối lại... {reconnectCount > 1 ? `(lần ${reconnectCount})` : ''}
+        </div>
+      )}
+
       <div style={{ width: '100%', maxWidth: '520px', display: 'flex', flexDirection: 'column' }}>
 
         {/* Doi thu — FIX mobile: wrap chu de khong xuong dong */}
@@ -145,7 +174,10 @@ export default function GameBoard({
               {isSpectator && <span style={{ flexShrink: 0, padding: '2px 6px', backgroundColor: '#757575', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }}>👁</span>}
               {isSyncing   && <span style={{ flexShrink: 0, fontSize: '0.7rem', opacity: 0.6 }}>⏳</span>}
             </div>
-            <div style={{ flexShrink: 0, backgroundColor: theme.buttonBg, color: theme.buttonText, padding: '4px 10px', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.85rem', opacity: currentTurn === 'black' ? 1 : 0.5 }}>
+            <div
+              ref={el => registerTimerDisplay?.('black', el)}
+              style={{ flexShrink: 0, backgroundColor: theme.buttonBg, color: theme.buttonText, padding: '4px 10px', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.85rem', opacity: currentTurn === 'black' ? 1 : 0.5 }}
+            >
               {currentTurn === 'black' ? formatTime(timeLeft) : '01:00'}
             </div>
           </div>
@@ -159,6 +191,7 @@ export default function GameBoard({
           pieces={pieces} selectedPiece={selectedPiece}
           shakingPieceId={shakingPieceId} kingInCheckId={kingInCheckId}
           lastMove={lastMove} isFlipped={isFlipped}
+          validMoves={validMoves} movedPieceId={movedPieceId}
           onPieceClick={(row, col, piece) => handleInteraction(row, col, piece)}
           onCellClick={(row, col) => handleInteraction(row, col, null)}
         />
@@ -176,7 +209,10 @@ export default function GameBoard({
                 <span style={{ fontSize: '0.8rem', opacity: 0.7 }}> ({playerElo})</span>
               </span>
             </div>
-            <div style={{ flexShrink: 0, backgroundColor: timeLeft <= 10 && currentTurn === 'red' ? '#d32f2f' : theme.buttonBg, color: theme.buttonText, padding: '4px 10px', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.85rem', opacity: currentTurn === 'red' ? 1 : 0.5, transition: 'background-color 0.3s' }}>
+            <div
+              ref={el => registerTimerDisplay?.('red', el)}
+              style={{ flexShrink: 0, backgroundColor: theme.buttonBg, color: theme.buttonText, padding: '4px 10px', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.85rem', opacity: currentTurn === 'red' ? 1 : 0.5, transition: 'background-color 0.3s' }}
+            >
               {currentTurn === 'red' ? formatTime(timeLeft) : '01:00'}
             </div>
           </div>

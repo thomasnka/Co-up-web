@@ -15,6 +15,20 @@ import {
   checkGameStatus,
 } from '../core/chessLogic';
 
+// P1: tính valid moves cho 1 quân — dùng ngoài render cycle
+const computeValidMoves = (piece, pieces, historyStates) => {
+  if (!piece) return [];
+  const moves = [];
+  for (let r = 0; r <= 9; r++) {
+    for (let c = 0; c <= 8; c++) {
+      if (isValidMove(piece, r, c, pieces, historyStates)) {
+        moves.push({ row: r, col: c });
+      }
+    }
+  }
+  return moves;
+};
+
 // -----------------------------------------------------------------------------
 // HƯỚNG DẪN SỬ DỤNG:
 //
@@ -53,8 +67,12 @@ export function useGameState({
   const [isDemoMode, setIsDemoMode]         = useState(false);
   const [historyStates, setHistoryStates]   = useState([]);
   const [halfMoveClock, setHalfMoveClock]   = useState(0);
+  const [validMoves, setValidMoves]         = useState([]);   // F3: ô hợp lệ khi chọn quân
+  const [movedPieceId, setMovedPieceId]     = useState(null); // F4/F5: animation
 
   const timerRef = useRef(null);
+  // P1: ref cho DOM timer display — update trực tiếp, không trigger re-render
+  const timerDisplayRefsRef = useRef(new Map()); // color → DOM element ref
 
   // ── INIT ───────────────────────────────────────────────────────────────────
   const initGame = useCallback(() => {
@@ -70,6 +88,8 @@ export function useGameState({
     setIsDemoMode(false);
     setHistoryStates([]);
     setHalfMoveClock(0);
+    setValidMoves([]);
+    setMovedPieceId(null);
   }, [gameMode]);
 
   useEffect(() => { initGame(); }, [initGame]);
@@ -85,17 +105,37 @@ export function useGameState({
     }
   }, [gameMode]);
 
-  // ── TIMER ──────────────────────────────────────────────────────────────────
+  // ── TIMER (P1 FIX: tách DOM update ra khỏi React render cycle) ────────────
+  // timeLeft vẫn giữ trong state để logic timeout hoạt động
+  // Nhưng display update qua DOM ref trực tiếp → không re-render toàn bộ board
+  const timeLeftRef = useRef(60);
+
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
 
     if (gameStatus !== 'playing' || (isWaitingForOpponent && !isDemoMode)) return;
 
     timerRef.current = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) { clearInterval(timerRef.current); return 0; }
-        return prev - 1;
-      });
+      timeLeftRef.current = Math.max(0, timeLeftRef.current - 1);
+
+      // P1: update DOM trực tiếp — không setState
+      const displayEl = timerDisplayRefsRef.current.get(currentTurn);
+      if (displayEl) {
+        const s = timeLeftRef.current;
+        const m = Math.floor(s / 60);
+        const r = s % 60;
+        displayEl.textContent = `0${m}:${r < 10 ? '0' : ''}${r}`;
+        // Đỏ cảnh báo khi còn ≤10s
+        if (currentTurn === 'red') {
+          displayEl.style.color = s <= 10 ? '#d32f2f' : '';
+        }
+      }
+
+      // Vẫn cần setState cho timeout logic (nhưng chỉ khi về 0)
+      if (timeLeftRef.current <= 0) {
+        clearInterval(timerRef.current);
+        setTimeLeft(0);
+      }
     }, 1000);
 
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
@@ -122,6 +162,8 @@ export function useGameState({
     if (!selectedPiece) {
       if (clickedPiece && getEffectiveColor(clickedPiece) === currentTurn) {
         setSelectedPiece(clickedPiece);
+        // F3: tính valid moves ngay khi chọn quân
+        setValidMoves(computeValidMoves(clickedPiece, pieces, historyStates));
       } else if (clickedPiece) {
         triggerErrorShake(clickedPiece.id);
       }
@@ -131,6 +173,8 @@ export function useGameState({
     // Bước 2: click quân cùng phe → đổi lựa chọn
     if (clickedPiece && getEffectiveColor(clickedPiece) === currentTurn) {
       setSelectedPiece(clickedPiece);
+      // F3: recalculate valid moves cho quân mới được chọn
+      setValidMoves(computeValidMoves(clickedPiece, pieces, historyStates));
       return;
     }
 
@@ -200,7 +244,11 @@ export function useGameState({
       setHistoryLog(newLog);
       setLastMove(newLastMove);
       setSelectedPiece(null);
+      setValidMoves([]);        // F3: clear valid moves sau khi đi
+      setMovedPieceId(selectedPiece.id); // F4/F5: trigger animation
       setCurrentTurn(nextTurnColor);
+      // P1: reset timer ref và state
+      timeLeftRef.current = 60;
       setTimeLeft(60);
 
       // Game end check
@@ -240,7 +288,10 @@ export function useGameState({
     if (remoteState.capturedPieces)            setCapturedPieces(remoteState.capturedPieces);
     if (remoteState.historyStates)             setHistoryStates(remoteState.historyStates);
     setSelectedPiece(null);
+    setValidMoves([]);
+    setMovedPieceId(null);
     setKingInCheckId(null);
+    timeLeftRef.current = 60;
     setTimeLeft(60);
   }, []);
 
@@ -249,6 +300,12 @@ export function useGameState({
     setShakingPieceId(id);
     setTimeout(() => setShakingPieceId(null), 300);
   };
+
+  // P1: đăng ký DOM element để timer update trực tiếp
+  const registerTimerDisplay = useCallback((color, el) => {
+    if (el) timerDisplayRefsRef.current.set(color, el);
+    else timerDisplayRefsRef.current.delete(color);
+  }, []);
 
   const formatTime = (seconds) => {
     const s = Math.max(0, seconds || 0);
@@ -311,6 +368,7 @@ export function useGameState({
     // State
     pieces, currentTurn, historyLog, capturedPieces, lastMove,
     shakingPieceId, selectedPiece, kingInCheckId, gameStatus, timeLeft, isDemoMode,
+    validMoves, movedPieceId,
 
     // Actions
     initGame,
@@ -324,5 +382,6 @@ export function useGameState({
     // Utilities
     formatTime,
     getResultMessage,
+    registerTimerDisplay, // P1: đăng ký DOM ref cho timer
   };
 }

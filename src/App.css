@@ -96,3 +96,46 @@ svg {
 @media (prefers-reduced-motion: reduce) {
   .piece-enter, .piece-select-pulse { animation: none; }
 }
+
+/* ── F4: PIECE FLIP 3D khi lật quân úp ───────────────────────────────────── */
+@keyframes piece-flip {
+  0%   { transform: rotateY(0deg)   scaleX(1); }
+  50%  { transform: rotateY(90deg)  scaleX(0.1); }
+  100% { transform: rotateY(0deg)   scaleX(1); }
+}
+.piece-flip {
+  animation: piece-flip 320ms ease-in-out forwards;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+/* ── F5: PIECE ENTER (di chuyển đến ô mới) ───────────────────────────────── */
+@keyframes piece-enter {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+.piece-enter {
+  animation: piece-enter 180ms ease-out forwards;
+}
+
+/* ── F5: PIECE CAPTURE (quân bị ăn biến mất) ────────────────────────────── */
+@keyframes piece-capture {
+  0%   { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.5); }
+}
+.piece-capture {
+  animation: piece-capture 200ms ease-out forwards;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+/* ── F3: VALID MOVE DOTS pulse nhẹ ──────────────────────────────────────── */
+@keyframes valid-move-pulse {
+  0%, 100% { opacity: 0.45; r: 14; }
+  50%       { opacity: 0.7;  r: 16; }
+}
+
+/* ── prefers-reduced-motion ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .piece-flip, .piece-enter, .piece-capture { animation: none; }
+}

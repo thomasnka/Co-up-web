@@ -61,7 +61,7 @@ export default function GameBoard({
 
   const {
     pieces, currentTurn, historyLog, capturedPieces, lastMove,
-    shakingPieceId, selectedPiece, kingInCheckId, gameStatus, timeLeft,
+    shakingPieceId, selectedPiece, kingInCheckId, gameStatus, timeLeft, movedPieceId,
     initGame, handleInteraction, handleDraw, handleResign,
     formatTime, activateDemo, getResultMessage, acceptDraw, isDemoMode,
   } = game;
@@ -147,7 +147,7 @@ export default function GameBoard({
         <ChessBoard
           theme={theme} gameMode={gameMode}
           pieces={pieces} selectedPiece={selectedPiece}
-          shakingPieceId={shakingPieceId} kingInCheckId={kingInCheckId}
+          shakingPieceId={shakingPieceId} kingInCheckId={kingInCheckId} movedPieceId={movedPieceId}
           lastMove={lastMove}
           onPieceClick={(row, col, piece) => handleInteraction(row, col, piece)}
           onCellClick={(row, col) => handleInteraction(row, col, null)}
@@ -217,7 +217,4 @@ export default function GameBoard({
 
     </div>
   );
-}cd /workspaces/Co-up-web
-git add src/hooks/useWebSocket.js src/hooks/useGameState.js src/pages/GameBoard.jsx
-git commit -m "fix: iOS Safari WS reconnect + popup Vietnamese diacritics"
-git push
+}

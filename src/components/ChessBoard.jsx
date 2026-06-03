@@ -4,7 +4,7 @@ import React, { useMemo, useCallback } from 'react';
 
 export default function ChessBoard({
   theme, gameMode,
-  pieces, selectedPiece, shakingPieceId, kingInCheckId, lastMove,
+  pieces, selectedPiece, shakingPieceId, kingInCheckId, lastMove, movedPieceId,
   onPieceClick, onCellClick,
 }) {
   const gridIntersections = useMemo(() => {
@@ -116,11 +116,12 @@ export default function ChessBoard({
       {pieces.map(p => {
         const cx = p.col * 100 + 50, cy = p.row * 100 + 50;
         const isSelected = selectedPiece?.id === p.id;
+        const isJustMoved = movedPieceId === p.id;
         return (
           <g
             key={p.id}
             onPointerDown={(e) => handlePiecePointer(e, p.row, p.col, p)}
-            className={shakingPieceId === p.id ? 'shake-error' : kingInCheckId === p.id ? 'in-check-warning' : ''}
+            className={shakingPieceId === p.id ? 'shake-error' : kingInCheckId === p.id ? 'in-check-warning' : isJustMoved ? 'piece-enter' : ''}
             filter="url(#piece-shadow)"
             style={{ cursor: 'pointer', touchAction: 'none' }}
           >

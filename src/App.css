@@ -72,3 +72,27 @@ svg {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+/* ── PIECE ENTER ANIMATION ────────────────────────────────────────────────── */
+/* Opacity-only: an toàn trên SVG cross-platform, không trigger layout repaint */
+@keyframes piece-enter {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+.piece-enter {
+  animation: piece-enter 180ms ease-out forwards;
+}
+
+/* Scale pulse khi chọn quân — dùng transform-origin center */
+@keyframes piece-select {
+  0%   { opacity: 1; }
+  40%  { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+.piece-select-pulse {
+  animation: piece-select 150ms ease-out forwards;
+}
+
+/* Giảm animation cho người dùng có prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .piece-enter, .piece-select-pulse { animation: none; }
+}

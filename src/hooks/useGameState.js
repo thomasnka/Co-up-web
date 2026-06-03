@@ -45,6 +45,7 @@ export function useGameState({
   const [historyLog, setHistoryLog]         = useState([]);
   const [capturedPieces, setCapturedPieces] = useState({ red: [], black: [] });
   const [lastMove, setLastMove]             = useState(null);
+  const [movedPieceId, setMovedPieceId]       = useState(null);
   const [shakingPieceId, setShakingPieceId] = useState(null);
   const [selectedPiece, setSelectedPiece]   = useState(null);
   const [kingInCheckId, setKingInCheckId]   = useState(null);
@@ -63,7 +64,9 @@ export function useGameState({
     setHistoryLog([]);
     setCapturedPieces({ red: [], black: [] });
     setLastMove(null);
+    setMovedPieceId(null);
     setSelectedPiece(null);
+    setMovedPieceId(null);
     setKingInCheckId(null);
     setTimeLeft(60);
     setGameStatus('playing');
@@ -199,6 +202,7 @@ export function useGameState({
       setPieces(nextPieces);
       setHistoryLog(newLog);
       setLastMove(newLastMove);
+      setMovedPieceId(selectedPiece.id);
       setSelectedPiece(null);
       setCurrentTurn(nextTurnColor);
       setTimeLeft(60);
@@ -240,6 +244,7 @@ export function useGameState({
     if (remoteState.capturedPieces)            setCapturedPieces(remoteState.capturedPieces);
     if (remoteState.historyStates)             setHistoryStates(remoteState.historyStates);
     setSelectedPiece(null);
+    setMovedPieceId(null);
     setKingInCheckId(null);
     setTimeLeft(60);
   }, []);
@@ -311,6 +316,7 @@ export function useGameState({
     // State
     pieces, currentTurn, historyLog, capturedPieces, lastMove,
     shakingPieceId, selectedPiece, kingInCheckId, gameStatus, timeLeft, isDemoMode,
+    movedPieceId,
 
     // Actions
     initGame,

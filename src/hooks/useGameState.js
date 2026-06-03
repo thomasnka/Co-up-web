@@ -45,7 +45,6 @@ export function useGameState({
   const [historyLog, setHistoryLog]         = useState([]);
   const [capturedPieces, setCapturedPieces] = useState({ red: [], black: [] });
   const [lastMove, setLastMove]             = useState(null);
-  const [movedPieceId, setMovedPieceId]       = useState(null);
   const [shakingPieceId, setShakingPieceId] = useState(null);
   const [selectedPiece, setSelectedPiece]   = useState(null);
   const [kingInCheckId, setKingInCheckId]   = useState(null);
@@ -64,9 +63,7 @@ export function useGameState({
     setHistoryLog([]);
     setCapturedPieces({ red: [], black: [] });
     setLastMove(null);
-    setMovedPieceId(null);
     setSelectedPiece(null);
-    setMovedPieceId(null);
     setKingInCheckId(null);
     setTimeLeft(60);
     setGameStatus('playing');
@@ -146,7 +143,7 @@ export function useGameState({
       if (isCapture) {
         setCapturedPieces(prev => ({
           ...prev,
-          [clickedPiece.color]: [...prev[clickedPiece.color], clickedPiece],
+          [clickedPiece.color]: [...prev[clickedPiece.color], { ...clickedPiece, isHidden: false }],
         }));
       }
 
@@ -196,13 +193,12 @@ export function useGameState({
       const newLog = [{ entry: logEntry, color: currentTurn === 'red' ? theme.redText : theme.blackText }, ...historyLog];
       const newLastMove = { from: { row: selectedPiece.row, col: selectedPiece.col }, to: { row: targetRow, col: targetCol } };
       const newCaptured = isCapture
-        ? { ...capturedPieces, [clickedPiece.color]: [...capturedPieces[clickedPiece.color], clickedPiece] }
+        ? { ...capturedPieces, [clickedPiece.color]: [...capturedPieces[clickedPiece.color], { ...clickedPiece, isHidden: false }] }
         : capturedPieces;
 
       setPieces(nextPieces);
       setHistoryLog(newLog);
       setLastMove(newLastMove);
-      setMovedPieceId(selectedPiece.id);
       setSelectedPiece(null);
       setCurrentTurn(nextTurnColor);
       setTimeLeft(60);
@@ -244,7 +240,6 @@ export function useGameState({
     if (remoteState.capturedPieces)            setCapturedPieces(remoteState.capturedPieces);
     if (remoteState.historyStates)             setHistoryStates(remoteState.historyStates);
     setSelectedPiece(null);
-    setMovedPieceId(null);
     setKingInCheckId(null);
     setTimeLeft(60);
   }, []);
@@ -316,7 +311,6 @@ export function useGameState({
     // State
     pieces, currentTurn, historyLog, capturedPieces, lastMove,
     shakingPieceId, selectedPiece, kingInCheckId, gameStatus, timeLeft, isDemoMode,
-    movedPieceId,
 
     // Actions
     initGame,

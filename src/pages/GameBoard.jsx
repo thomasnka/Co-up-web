@@ -1,7 +1,7 @@
 // src/pages/GameBoard.jsx
 // FIXES: Demo mode bypass isSpectator, mobile header layout, remove "Choi tiep" button
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { useMultiplayer } from '../hooks/useMultiplayer';
 import ChessBoard from '../components/ChessBoard';
@@ -15,6 +15,7 @@ export default function GameBoard({
 }) {
   const gameRef = useRef(null);
   const [showDrawBanner, setShowDrawBanner] = useState(false);
+  const [localDemoMode, setLocalDemoMode] = useState(false);
 
   const handleRemoteMove = useCallback((remoteState) => {
     gameRef.current?.applyRemoteState(remoteState);
@@ -26,15 +27,22 @@ export default function GameBoard({
 
   const mp = useMultiplayer({
     matchId, playerId,
+    playerName, playerElo,
     onRemoteMove:  handleRemoteMove,
     onMatchUpdate: null,
     onDrawRequest: handleDrawRequestReceived,
   });
 
   const { matchData, isWaiting, isSpectator, isSyncing,
+          myColor, wsStatus, reconnectCount,
           getIsMyTurn, syncMove, syncResult, requestDraw, respondDraw } = mp;
 
   const isWaitingForOpponent = isWaiting;
+
+  // BUG-1 FIX: lật bàn cờ cho guest (đen)
+  // BUG-2 FIX: myColor fallback 'red' khi host_color chưa assign
+  const effectiveMyColor = myColor ?? (matchData?.host_id === playerId ? 'red' : 'black');
+  const isFlipped = !!matchId && effectiveMyColor === 'black';
 
   const handleOnDrawRequest = useCallback(() => {
     if (matchId && !isSpectator) requestDraw();
@@ -45,11 +53,10 @@ export default function GameBoard({
     isWaitingForOpponent,
     // FIX Demo: isDemoMode bypass canInteract hoan toan — khong can matchId/myColor
     canInteract: (turn) => {
-      // Demo mode: luon cho phep ca 2 phia
-      if (game?.isDemoMode) return true;
-      // Spectator: khong cho phep
+      // BUG-4 FIX: dùng localDemoMode (stable ref) thay game?.isDemoMode (stale)
+      if (localDemoMode) return true;
+      if (!matchId) return true;  // offline: luôn cho phép
       if (isSpectator) return false;
-      // Online: check turn
       return getIsMyTurn(turn);
     },
     onMoveMade:    (s) => { if (matchId && !isSpectator) syncMove(s); },
@@ -61,17 +68,20 @@ export default function GameBoard({
 
   const {
     pieces, currentTurn, historyLog, capturedPieces, lastMove,
-    shakingPieceId, selectedPiece, kingInCheckId, gameStatus, timeLeft, movedPieceId,
+    shakingPieceId, selectedPiece, kingInCheckId, gameStatus, timeLeft,
     initGame, handleInteraction, handleDraw, handleResign,
     formatTime, activateDemo, getResultMessage, acceptDraw, isDemoMode,
   } = game;
+
+  // BUG-4 FIX: sync localDemoMode khi game.isDemoMode thay đổi
+  useEffect(() => { setLocalDemoMode(isDemoMode); }, [isDemoMode]);
 
   const result = getResultMessage();
 
   const handleExitGame = useCallback(async () => {
     if (isSpectator) { setScreen('menu'); return; }
     if (gameStatus === 'playing' && !isWaitingForOpponent) {
-      if (window.confirm('Thoát trận giữa chừng bạn sẽ bị xử thua. Xác nhận thoát?')) {
+      if (window.confirm('Thoat tran giua chung ban se bi xu thua. Xac nhan thoat?')) {
         if (matchId && !isSpectator) await syncResult(`resign_${currentTurn}`);
         setScreen('menu');
       }
@@ -128,7 +138,7 @@ export default function GameBoard({
               </span>
               {/* FIX mobile: nut Demo gon lai */}
               {isWaitingForOpponent && !isDemoMode && (
-                <button onClick={activateDemo} style={{ flexShrink: 0, padding: '3px 7px', backgroundColor: '#4CAF50', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                <button onClick={() => { activateDemo(); setLocalDemoMode(true); }} style={{ flexShrink: 0, padding: '3px 7px', backgroundColor: '#4CAF50', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                   Demo
                 </button>
               )}
@@ -147,8 +157,8 @@ export default function GameBoard({
         <ChessBoard
           theme={theme} gameMode={gameMode}
           pieces={pieces} selectedPiece={selectedPiece}
-          shakingPieceId={shakingPieceId} kingInCheckId={kingInCheckId} movedPieceId={movedPieceId}
-          lastMove={lastMove}
+          shakingPieceId={shakingPieceId} kingInCheckId={kingInCheckId}
+          lastMove={lastMove} isFlipped={isFlipped}
           onPieceClick={(row, col, piece) => handleInteraction(row, col, piece)}
           onCellClick={(row, col) => handleInteraction(row, col, null)}
         />

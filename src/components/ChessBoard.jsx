@@ -4,7 +4,7 @@ import React, { useMemo, useCallback } from 'react';
 
 export default function ChessBoard({
   theme, gameMode,
-  pieces, selectedPiece, shakingPieceId, kingInCheckId, lastMove, movedPieceId,
+  pieces, selectedPiece, shakingPieceId, kingInCheckId, lastMove, isFlipped = false,
   onPieceClick, onCellClick,
 }) {
   const gridIntersections = useMemo(() => {
@@ -47,6 +47,7 @@ export default function ChessBoard({
         </radialGradient>
       </defs>
 
+      <g transform={isFlipped ? 'rotate(180, 450, 500)' : undefined}>
       {/* Last move highlight */}
       {lastMove && (
         <>
@@ -85,8 +86,10 @@ export default function ChessBoard({
       {/* Tọa độ cột */}
       {[...Array(9)].map((_, i) => (
         <React.Fragment key={`coord-${i}`}>
-          <text x={i * 100 + 50} y="32"  textAnchor="middle" fontSize="16" fontWeight="bold" fill={theme.lines} opacity="0.6">{i + 1}</text>
-          <text x={i * 100 + 50} y="978" textAnchor="middle" fontSize="16" fontWeight="bold" fill={theme.lines} opacity="0.6">{9 - i}</text>
+          <text x={i * 100 + 50} y="32"  textAnchor="middle" fontSize="16" fontWeight="bold" fill={theme.lines} opacity="0.6"
+            transform={isFlipped ? `rotate(180, ${i * 100 + 50}, 32)` : undefined}>{isFlipped ? 9 - i : i + 1}</text>
+          <text x={i * 100 + 50} y="978" textAnchor="middle" fontSize="16" fontWeight="bold" fill={theme.lines} opacity="0.6"
+            transform={isFlipped ? `rotate(180, ${i * 100 + 50}, 978)` : undefined}>{isFlipped ? i + 1 : 9 - i}</text>
         </React.Fragment>
       ))}
 
@@ -116,12 +119,11 @@ export default function ChessBoard({
       {pieces.map(p => {
         const cx = p.col * 100 + 50, cy = p.row * 100 + 50;
         const isSelected = selectedPiece?.id === p.id;
-        const isJustMoved = movedPieceId === p.id;
         return (
           <g
             key={p.id}
             onPointerDown={(e) => handlePiecePointer(e, p.row, p.col, p)}
-            className={shakingPieceId === p.id ? 'shake-error' : kingInCheckId === p.id ? 'in-check-warning' : isJustMoved ? 'piece-enter' : ''}
+            className={shakingPieceId === p.id ? 'shake-error' : kingInCheckId === p.id ? 'in-check-warning' : ''}
             filter="url(#piece-shadow)"
             style={{ cursor: 'pointer', touchAction: 'none' }}
           >
@@ -129,11 +131,13 @@ export default function ChessBoard({
             <circle cx={cx} cy={cy} r="42" fill="url(#revealed-grad)" stroke="#999" strokeWidth="1.5" />
             {p.isHidden
               ? <circle cx={cx} cy={cy} r="34" fill="url(#hidden-grad)" stroke="#bba993" strokeWidth="1.5" />
-              : <text x={cx} y={cy + 2} textAnchor="middle" dominantBaseline="middle" fontSize="46" fontWeight="bold" fill={p.color === 'red' ? theme.redText : theme.blackText}>{p.name}</text>
+              : <text x={cx} y={cy + 2} textAnchor="middle" dominantBaseline="middle" fontSize="46" fontWeight="bold" fill={p.color === 'red' ? theme.redText : theme.blackText}
+                  transform={isFlipped ? `rotate(180, ${cx}, ${cy + 2})` : undefined}>{p.name}</text>
             }
           </g>
         );
       })}
+      </g>
     </svg>
   );
 }

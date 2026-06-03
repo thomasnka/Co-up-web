@@ -102,7 +102,13 @@ export default function MainMenu({ setScreen, setGameMode, setMatchId, theme, au
   };
 
   const handleJoinRoom = async (room) => {
-    if (room.host_id === playerId) return;
+    // B5 FIX: host re-enter phòng của mình → redirect thẳng, không block
+    if (room.host_id === playerId) {
+      setGameMode(room.mode);
+      setMatchId(room.id);
+      setScreen('playing');
+      return;
+    }
     setIsLoading(true);
     try {
       const { error } = await supabase.from('matches').update({
@@ -118,8 +124,13 @@ export default function MainMenu({ setScreen, setGameMode, setMatchId, theme, au
     setIsLoading(true);
     const available = waitingRooms.filter(r => r.host_id !== playerId);
     if (available.length === 0) { await handleCreateRoom('standard'); return; }
-    const best = [...available].sort((a, b) =>
-      Math.abs(a.host_elo - playerElo) - Math.abs(b.host_elo - playerElo)
+
+    // U2 FIX: ưu tiên phòng trong ELO range ±200, fallback ra phòng gần nhất
+    const ELO_RANGE = 200;
+    const inRange = available.filter(r => Math.abs((r.host_elo ?? 1500) - playerElo) <= ELO_RANGE);
+    const pool = inRange.length > 0 ? inRange : available;
+    const best = [...pool].sort((a, b) =>
+      Math.abs((a.host_elo ?? 1500) - playerElo) - Math.abs((b.host_elo ?? 1500) - playerElo)
     )[0];
     await handleJoinRoom(best);
   };

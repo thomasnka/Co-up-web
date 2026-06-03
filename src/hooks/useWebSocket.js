@@ -52,6 +52,7 @@ export function useWebSocket({
   const messageQueueRef    = useRef([]);     // buffer khi đang reconnect
   const isMountedRef       = useRef(true);
   const shouldConnectRef   = useRef(false);  // dùng để cancel reconnect khi unmount
+  const seqRef             = useRef(0);      // B2: sequence counter cho race condition
 
   // Cập nhật callback ref mà không trigger re-connect
   useEffect(() => { onMessageRef.current = onMessage; }, [onMessage]);
@@ -88,6 +89,9 @@ export function useWebSocket({
       setStatus('open');
       reconnectCountRef.current = 0;
       setReconnectCount(0);
+
+      // B2: reset sequence counter khi reconnect (server cũng reset)
+      seqRef.current = 0;
 
       // Gửi join ngay sau khi open
       _rawSend({
@@ -173,12 +177,17 @@ export function useWebSocket({
 
   // ── PUBLIC SEND ───────────────────────────────────────────────────────────
   const send = useCallback((msg) => {
+    // B2 FIX: gắn sequence number vào move message để server detect race condition
+    const outMsg = msg.type === 'move'
+      ? { ...msg, seq: ++seqRef.current }
+      : msg;
+
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      _rawSend(msg);
+      _rawSend(outMsg);
     } else {
       // Queue khi đang reconnect (tránh drop message)
       if (messageQueueRef.current.length < MAX_QUEUE_SIZE) {
-        messageQueueRef.current.push(msg);
+        messageQueueRef.current.push(outMsg);
       } else {
         console.warn('[useWebSocket] Message queue full — dropping message');
       }

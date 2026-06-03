@@ -65,24 +65,8 @@ export function useAuth() {
   useEffect(() => {
     let mounted = true;
 
-    const init = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (mounted) {
-          setUser(session?.user ?? null);
-          if (session?.user) await fetchProfile(session.user.id);
-        }
-      } catch (e) {
-        console.error('[useAuth] getSession error:', e.message);
-      } finally {
-        // Luôn tắt loading dù có lỗi hay không
-        if (mounted) setIsLoading(false);
-      }
-    };
-
-    init();
-
-    // Subscribe auth state changes (login, logout, token refresh)
+    // B4 FIX: Subscribe TRƯỚC getSession() để không miss SIGNED_IN event
+    // sau OAuth redirect (Supabase parse hash token trong onAuthStateChange)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
@@ -106,8 +90,32 @@ export function useAuth() {
         if (event === 'SIGNED_OUT') {
           setProfile(null);
         }
+
+        // B4 FIX: tắt loading sau bất kỳ auth event nào
+        if (mounted) setIsLoading(false);
       }
     );
+
+    // B4 FIX: Xóa hash token khỏi URL sau OAuth redirect (tránh loop + bảo mật)
+    if (window.location.hash.includes('access_token')) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+
+    // Sau khi subscribe, lấy session hiện tại (nếu đã có từ trước)
+    const init = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (mounted && session?.user) {
+          setUser(session.user);
+          await fetchProfile(session.user.id);
+        }
+      } catch (e) {
+        console.error('[useAuth] getSession error:', e.message);
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+    };
+    init();
 
     return () => {
       mounted = false;

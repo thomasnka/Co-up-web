@@ -43,12 +43,19 @@ export default function MainMenu({ setScreen, setGameMode, setMatchId, theme, au
             await supabase.from('matches').update({ status: 'cancelled' }).in('id', allStale);
           }
 
-          setWaitingRooms(data.filter(m =>
-            m.status === 'waiting' && (now - new Date(m.created_at).getTime()) < STALE_WAITING_MS
-          ));
-          setLiveGames(data.filter(m =>
-            m.status === 'playing' && (now - new Date(m.updated_at ?? m.created_at).getTime()) < STALE_PLAYING_MS
-          ));
+          // Dedup bằng Map để tránh hiển thị trùng khi subscription fire nhiều lần
+          const waitingMap = new Map();
+          const liveMap = new Map();
+          data.forEach(m => {
+            if (m.status === 'waiting' && (now - new Date(m.created_at).getTime()) < STALE_WAITING_MS) {
+              waitingMap.set(m.id, m);
+            }
+            if (m.status === 'playing' && (now - new Date(m.updated_at ?? m.created_at).getTime()) < STALE_PLAYING_MS) {
+              liveMap.set(m.id, m);
+            }
+          });
+          setWaitingRooms([...waitingMap.values()]);
+          setLiveGames([...liveMap.values()]);
         }
       } catch (e) { console.error('Lỗi dữ liệu sảnh:', e.message); }
       finally { setIsLoading(false); }
@@ -120,13 +127,6 @@ export default function MainMenu({ setScreen, setGameMode, setMatchId, theme, au
     finally { setIsLoading(false); }
   };
 
-  // C4: Spectator — không update DB, chỉ set matchId + mode rồi vào GameBoard với role spectator
-  const handleSpectate = (game) => {
-    setGameMode(game.mode);
-    setMatchId(game.id);
-    setScreen("playing");
-  };
-
   const handleQuickMatch = async () => {
     setIsLoading(true);
     const available = waitingRooms.filter(r => r.host_id !== playerId);
@@ -189,7 +189,7 @@ export default function MainMenu({ setScreen, setGameMode, setMatchId, theme, au
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '25px', width: '100%', maxWidth: '1200px', flex: 1 }}>
         <LobbyList
           waitingRooms={waitingRooms} liveGames={liveGames} isLoading={isLoading}
-          playerId={playerId} theme={theme} onJoinRoom={handleJoinRoom} onSpectate={handleSpectate}
+          playerId={playerId} theme={theme} onJoinRoom={handleJoinRoom}
         />
         <Leaderboard leaderboard={leaderboard} auth={auth} theme={theme} isNightMode={isNightMode} />
       </div>

@@ -69,11 +69,6 @@ export function useGameState({
   const [halfMoveClock, setHalfMoveClock]   = useState(0);
   const [validMoves, setValidMoves]         = useState([]);   // F3: ô hợp lệ khi chọn quân
   const [movedPieceId, setMovedPieceId]     = useState(null); // F4/F5: animation
-  // xqchess: roomState lifecycle — New(0) → Ready(1 nước) → Running(2+ nước) → Ended
-  // Dùng để quyết định có confirm khi quit/resign/draw không
-  const [turnCount, setTurnCount]           = useState(0);
-  // lastMoveSound: 'move' | 'eat' | 'check' — để GameBoard play sound đúng
-  const [lastMoveSound, setLastMoveSound]   = useState(null);
 
   const timerRef = useRef(null);
   // P1: ref cho DOM timer display — update trực tiếp, không trigger re-render
@@ -95,8 +90,6 @@ export function useGameState({
     setHalfMoveClock(0);
     setValidMoves([]);
     setMovedPieceId(null);
-    setTurnCount(0);
-    setLastMoveSound(null);
   }, [gameMode]);
 
   useEffect(() => { initGame(); }, [initGame]);
@@ -109,74 +102,72 @@ export function useGameState({
       prevGameModeRef.current = gameMode;
       setHistoryStates([]);
       setHalfMoveClock(0);
-      setTurnCount(0);
     }
   }, [gameMode]);
 
-  // ── TIMER — xqchess style: absolute endAt + 250ms tick ──────────────────
-  // Lý do: drift-safe dưới setInterval jitter và tab throttling
-  // 250ms tick: smoother display (xqchess dùng 250ms)
-  // Alert strict < 10s (không phải <=, giữ đúng boundary xqchess)
+  // ── TIMER — absolute endAt + 250ms tick (xqchess style) ───────────────────
+  // - drift-safe: tính từ Date.now() thay vì decrement
+  // - 250ms tick: smoother display
+  // - Alert strict < 10s
+  // - Timeout: setGameStatus ngay, không qua useState intermediary
   const timeLeftRef = useRef(60);
-  const timerEndAtRef = useRef(null); // absolute timestamp khi hết giờ
+  const timerEndAtRef = useRef(null);
 
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
-
     if (gameStatus !== 'playing' || (isWaitingForOpponent && !isDemoMode)) return;
 
-    // Set absolute end timestamp
-    timerEndAtRef.current = Date.now() + timeLeftRef.current * 1000;
+    // Set absolute end time nếu chưa có (reset sau mỗi nước đi)
+    if (!timerEndAtRef.current) {
+      timerEndAtRef.current = Date.now() + (timeLeftRef.current * 1000);
+    }
 
-    const render = () => {
+    const tick = () => {
       const remainMs = timerEndAtRef.current - Date.now();
+
       if (remainMs <= 0) {
         clearInterval(timerRef.current);
         timerRef.current = null;
+        timerEndAtRef.current = null;
+        timeLeftRef.current = 0;
         // Update DOM
-        const displayEl = timerDisplayRefsRef.current.get(currentTurn);
-        if (displayEl) {
-          displayEl.textContent = '00:00';
-          displayEl.style.backgroundColor = '#d32f2f';
+        const el = timerDisplayRefsRef.current?.get(currentTurn);
+        if (el) {
+          el.textContent = '00:00';
+          el.style.backgroundColor = '#d32f2f';
+          el.style.color = '#fff';
         }
-        setTimeLeft(0);
+        // Xử lý timeout ngay
+        setGameStatus(prev => prev === 'playing' ? `timeout_${currentTurn}` : prev);
         return;
       }
 
       const totalSec = Math.ceil(remainMs / 1000);
+      timeLeftRef.current = totalSec;
       const m = Math.floor(totalSec / 60);
       const s = totalSec % 60;
-      const pad = (n) => (n < 10 ? '0' + n : '' + n);
+      const pad = n => n < 10 ? '0' + n : '' + n;
+      const text = pad(m) + ':' + pad(s);
 
-      // P1: update DOM trực tiếp — không setState
-      const displayEl = timerDisplayRefsRef.current.get(currentTurn);
-      if (displayEl) {
-        displayEl.textContent = pad(m) + ':' + pad(s);
-        // Alert strict < 10s (xqchess: remainMs < alertFromMs, không phải <=)
+      // Update DOM trực tiếp — không setState
+      const el = timerDisplayRefsRef.current?.get(currentTurn);
+      if (el) {
+        el.textContent = text;
+        // Alert strict < 10s (xqchess: alertFromMs)
         if (remainMs < 10_000) {
-          displayEl.style.backgroundColor = '#d32f2f';
-          displayEl.style.color = '#fff';
+          el.style.backgroundColor = '#d32f2f';
+          el.style.color = '#fff';
         } else {
-          displayEl.style.backgroundColor = '';
-          displayEl.style.color = '';
+          el.style.backgroundColor = '';
+          el.style.color = '';
         }
       }
-
-      // Sync timeLeftRef cho reset
-      timeLeftRef.current = Math.ceil(remainMs / 1000);
     };
 
-    render(); // render ngay lập tức
-    timerRef.current = setInterval(render, 250); // 250ms tick
-
+    tick(); // render ngay
+    timerRef.current = setInterval(tick, 250);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [currentTurn, gameStatus, isDemoMode, isWaitingForOpponent]);
-
-  useEffect(() => {
-    if (timeLeft <= 0 && gameStatus === 'playing') {
-      setGameStatus(`timeout_${currentTurn}`);
-    }
-  }, [timeLeft, gameStatus, currentTurn]);
 
   // ── INTERACTION ────────────────────────────────────────────────────────────
   // B4 FIX: xóa tham số isWaitingForOpponent khỏi signature
@@ -218,15 +209,13 @@ export function useGameState({
       if (isCapture) {
         setCapturedPieces(prev => ({
           ...prev,
-          // Bug3 fix: giữ nguyên isHidden của quân bị ăn — không force reveal
-          [clickedPiece.color]: [...prev[clickedPiece.color], clickedPiece],
+          [clickedPiece.color]: [...prev[clickedPiece.color], { ...clickedPiece, isHidden: false }],
         }));
       }
 
       let nextPieces = pieces.filter(p => !(isCapture && p.id === clickedPiece.id));
       nextPieces = nextPieces.map(p =>
         p.id === selectedPiece.id
-          // C2: set opened=true sau mỗi lần di chuyển → advisor/elephant thoát ràng buộc palace/river
           ? { ...p, row: targetRow, col: targetCol, isHidden: false, opened: true }
           : p
       );
@@ -269,8 +258,8 @@ export function useGameState({
       // Commit state
       const newLog = [{ entry: logEntry, color: currentTurn === 'red' ? theme.redText : theme.blackText }, ...historyLog];
       const newLastMove = { from: { row: selectedPiece.row, col: selectedPiece.col }, to: { row: targetRow, col: targetCol } };
+      // Giữ nguyên isHidden của quân bị ăn — không force reveal
       const newCaptured = isCapture
-        // Bug3 fix: giữ nguyên isHidden
         ? { ...capturedPieces, [clickedPiece.color]: [...capturedPieces[clickedPiece.color], clickedPiece] }
         : capturedPieces;
 
@@ -281,14 +270,9 @@ export function useGameState({
       setValidMoves([]);        // F3: clear valid moves sau khi đi
       setMovedPieceId(selectedPiece.id); // F4/F5: trigger animation
       setCurrentTurn(nextTurnColor);
-      // xqchess: track turnCount để quyết định roomState (Running khi >= 2 nước)
-      setTurnCount(prev => prev + 1);
-      // xqchess sound priority: check > eat > move
-      const soundName = checkStatus ? 'check' : isCapture ? 'eat' : 'move';
-      setLastMoveSound(soundName);
-      // P1: reset timer — absolute endAt style
+      // Reset timer sau mỗi nước đi
       timeLeftRef.current = 60;
-      timerEndAtRef.current = Date.now() + 60_000;
+      timerEndAtRef.current = null; // clear để useEffect timer tạo mới với endAt đúng
       setTimeLeft(60);
 
       // Game end check
@@ -306,7 +290,6 @@ export function useGameState({
         lastMove:       newLastMove,
         capturedPieces: newCaptured,
         historyStates:  nextHistoryStates,
-        lastMoveSound:  soundName, // xqchess: sync sound cho remote player
       });
 
     } else {
@@ -317,10 +300,12 @@ export function useGameState({
     gameStatus, isDemoMode, isWaitingForOpponent, canInteract,
     selectedPiece, currentTurn, pieces, historyStates,
     halfMoveClock, capturedPieces, historyLog, theme,
-    onMoveMade, onGameEnd, turnCount,
+    onMoveMade, onGameEnd,
   ]);
 
   // ── APPLY REMOTE STATE (từ đối thủ qua Supabase) ──────────────────────────
+  // applyRemoteState: nhận state từ đối thủ, apply vào local
+  // Quan trọng: chạy checkGameStatus để BÊN BỊ CHIẾU cũng nhận popup kết quả
   const applyRemoteState = useCallback((remoteState) => {
     if (remoteState.pieces)                    setPieces(remoteState.pieces);
     if (remoteState.currentTurn)               setCurrentTurn(remoteState.currentTurn);
@@ -331,12 +316,32 @@ export function useGameState({
     setSelectedPiece(null);
     setValidMoves([]);
     setMovedPieceId(null);
-    setKingInCheckId(null);
     timeLeftRef.current = 60;
-    timerEndAtRef.current = Date.now() + 60_000;
+    timerEndAtRef.current = null;
     setTimeLeft(60);
-    // Sound cho remote move
-    if (remoteState.lastMoveSound) setLastMoveSound(remoteState.lastMoveSound);
+
+    // Chạy checkGameStatus sau khi apply remote state
+    // → bên bị chiếu bí cũng nhận được popup kết quả
+    if (remoteState.pieces && remoteState.currentTurn) {
+      const status = checkGameStatus(
+        remoteState.pieces,
+        remoteState.currentTurn,
+        0,
+        remoteState.historyStates ?? []
+      );
+      if (status !== 'playing') {
+        setGameStatus(status);
+      }
+      // Cập nhật kingInCheck cho remote state
+      const checkResult = isKingInCheck(remoteState.pieces, remoteState.currentTurn);
+      if (checkResult) {
+        const king = remoteState.pieces.find(p => p.type === 'general' && p.color === remoteState.currentTurn && !p.isHidden);
+        if (king) setKingInCheckId(king.id);
+        else setKingInCheckId(null);
+      } else {
+        setKingInCheckId(null);
+      }
+    }
   }, []);
 
   // ── HANDLERS ───────────────────────────────────────────────────────────────
@@ -360,34 +365,27 @@ export function useGameState({
 
   const activateDemo = useCallback(() => { setIsDemoMode(true); }, []);
 
-  // xqchess: chỉ confirm resign khi game đang Running (>= 2 nước đi)
   const handleResign = useCallback((turnColor) => {
-    if (turnCount < 2) {
-      // New/Ready: thoát thẳng không confirm
-      setGameStatus(`resign_${turnColor}`);
-      return;
-    }
     if (window.confirm('Bạn xác nhận muốn nhận thua ván đấu này?')) {
       setGameStatus(`resign_${turnColor}`);
     }
-  }, [turnCount]);
+  }, []);
 
-  // xqchess: draw chỉ có nghĩa khi game đang Running (>= 2 nước)
-  // New/Ready: bấm hòa = thoát thẳng
+  // U2 FIX: handleDraw không confirm ngay nữa
+  // - Offline / Demo → set draw_agreed trực tiếp
+  // - Online → gọi onDrawRequest callback để useMultiplayer xử lý 2-chiều
   const handleDraw = useCallback(() => {
-    if (turnCount < 2) {
-      setGameStatus('draw_agreed');
-      return;
-    }
     const isOnline = !isDemoMode && onDrawRequest !== null;
     if (isOnline) {
+      // Online: gửi request cho đối thủ qua Supabase (xử lý trong useMultiplayer)
       onDrawRequest?.();
     } else {
+      // Offline / Demo: confirm ngay
       if (window.confirm('Xác nhận cầu hòa?')) {
         setGameStatus('draw_agreed');
       }
     }
-  }, [isDemoMode, onDrawRequest, turnCount]);
+  }, [isDemoMode, onDrawRequest]);
 
   // U2: accept draw khi đối thủ xin hòa và mình đồng ý (gọi từ GameBoard banner)
   const acceptDraw = useCallback(() => {
@@ -419,7 +417,7 @@ export function useGameState({
     // State
     pieces, currentTurn, historyLog, capturedPieces, lastMove,
     shakingPieceId, selectedPiece, kingInCheckId, gameStatus, timeLeft, isDemoMode,
-    validMoves, movedPieceId, turnCount, lastMoveSound,
+    validMoves, movedPieceId,
 
     // Actions
     initGame,

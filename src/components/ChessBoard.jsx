@@ -164,17 +164,17 @@ export default function ChessBoard({
           />
         ))}
 
-        {/* ── RIVER LABEL ───────────────────────────────────────── */}
-        <text x="270" y="505" textAnchor="middle" dominantBaseline="middle"
-          fontSize="26" fontWeight="400" letterSpacing="6"
-          fill={isDay ? 'rgba(100,70,20,0.22)' : 'rgba(200,160,80,0.18)'}
-          style={{ fontFamily: '"Noto Serif SC", "STKaiti", serif' }}
-        >楚河</text>
-        <text x="630" y="505" textAnchor="middle" dominantBaseline="middle"
-          fontSize="26" fontWeight="400" letterSpacing="6"
-          fill={isDay ? 'rgba(100,70,20,0.22)' : 'rgba(200,160,80,0.18)'}
-          style={{ fontFamily: '"Noto Serif SC", "STKaiti", serif' }}
-        >漢界</text>
+        {/* ── RIVER LABEL — thay bằng brand + mode ─────────────── */}
+        {(() => {
+          const label = gameMode === 'innovative' ? 'Cờ Úp Pro · Nâng Cao' : 'Cờ Úp Pro · Tiêu Chuẩn';
+          return (
+            <text x="450" y="505" textAnchor="middle" dominantBaseline="middle"
+              fontSize="18" fontWeight="500" letterSpacing="2"
+              fill={isDay ? 'rgba(100,70,20,0.20)' : 'rgba(200,160,80,0.16)'}
+              style={{ fontFamily: '"Noto Serif SC", sans-serif', userSelect: 'none' }}
+            >{label}</text>
+          );
+        })()}
 
         {/* ── COORDINATE LABELS ─────────────────────────────────── */}
         {[...Array(9)].map((_, i) => (

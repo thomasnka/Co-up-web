@@ -80,13 +80,13 @@ export default function PlayerPanel({ auth, theme, isNightMode, setIsNightMode }
               onClick={loginWithGoogle}
               style={{ padding: '4px 12px', fontSize: '0.8rem', backgroundColor: '#db4437', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
             >
-              Google
+              GG
             </button>
             <button
               onClick={loginWithFacebook}
               style={{ padding: '4px 12px', fontSize: '0.8rem', backgroundColor: '#1877F2', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
             >
-              Facebook
+              FB
             </button>
           </div>
         </div>

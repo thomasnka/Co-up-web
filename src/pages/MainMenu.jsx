@@ -219,16 +219,53 @@ export default function MainMenu({ setScreen, setGameMode, setMatchId, theme, au
         <Leaderboard leaderboard={leaderboard} auth={auth} theme={theme} isNightMode={isNightMode} />
       </div>
 
-      <footer style={{ marginTop: '60px', width: '100%', maxWidth: '1200px', borderTop: `1px solid ${theme.lines}`, paddingTop: '30px', paddingBottom: '30px', textAlign: 'left', opacity: 0.85, fontSize: '0.9rem', lineHeight: '1.6', color: theme.textColor }}>
-        <h2 style={{ fontSize: '1.2rem', marginBottom: '15px' }}>Chơi Cờ Úp Online Miễn Phí Tại Cờ Úp Pro</h2>
-        <p style={{ marginBottom: '15px' }}>
-          <strong>Cờ Úp Pro</strong> là nền tảng chơi <strong>cờ úp online</strong> đa nền tảng với hệ thống ELO chuẩn xác, không cần cài đặt.
-        </p>
-        <h3 style={{ fontSize: '1.05rem', margin: '20px 0 10px 0' }}>Hai Chế Độ Chơi</h3>
-        <ul style={{ listStyleType: 'disc', paddingLeft: '20px', marginBottom: '15px' }}>
-          <li style={{ marginBottom: '8px' }}><strong>Tiêu chuẩn:</strong> Màu cờ cố định theo phe. Kết quả tính ELO.</li>
-          <li><strong>Cải tiến:</strong> Màu cờ ngẫu nhiên khi lật. Không tính ELO.</li>
-        </ul>
+      <footer style={{
+        backgroundColor: isNightMode ? '#111' : '#1a1a1a',
+        color: '#cccccc',
+        padding: '40px 20px',
+        fontSize: '14px',
+        lineHeight: '1.6',
+        borderTop: '4px solid #d32f2f',
+        marginTop: '40px',
+        width: '100%',
+        boxSizing: 'border-box',
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <h2 style={{ color: '#ffffff', fontSize: '24px', marginBottom: '15px' }}>Chơi Cờ Úp Online Miễn Phí Tại Cờ Úp Pro</h2>
+          <p style={{ marginBottom: '20px' }}>
+            Chào mừng bạn đến với <strong>Cờ Úp Pro</strong> — nền tảng giải trí hàng đầu dành cho những ai đam mê thể loại <strong>game cờ úp 2 người</strong> tại Việt Nam. Không cần cài đặt phức tạp, bạn có thể tham gia <strong>chơi cờ úp</strong> trực tiếp ngay trên trình duyệt web của máy tính hoặc điện thoại di động mọi lúc, mọi nơi.
+          </p>
+
+          <h3 style={{ color: '#ffffff', fontSize: '18px', marginTop: '20px', marginBottom: '10px' }}>Cờ Úp Là Gì?</h3>
+          <p style={{ marginBottom: '15px' }}>
+            Cờ úp là một biến thể độc đáo của cờ tướng truyền thống. Điểm hấp dẫn của trò chơi nằm ở yếu tố bí mật: tất cả các quân cờ (trừ quân Tướng) đều bị úp ngược và sắp xếp ngẫu nhiên khi bắt đầu trận đấu. Chỉ khi quân cờ thực hiện nước đi đầu tiên, danh tính thực sự mới được lật mở, tạo ra những bước ngoặt chiến thuật không thể lường trước.
+          </p>
+
+          <h3 style={{ color: '#ffffff', fontSize: '18px', marginTop: '20px', marginBottom: '10px' }}>Luật Chơi Cờ Úp Cơ Bản</h3>
+          <ul style={{ paddingLeft: '20px', marginBottom: '15px' }}>
+            <li style={{ marginBottom: '8px' }}><strong>Nước đi đầu tiên:</strong> Quân cờ đang úp di chuyển theo luật đi của vị trí đang đứng trên bàn cờ.</li>
+            <li style={{ marginBottom: '8px' }}><strong>Lật quân:</strong> Sau nước đi đầu tiên, quân được lật ngửa để hiện danh tính thực (Xe, Pháo, Mã, Tượng, Sĩ, Tốt).</li>
+            <li style={{ marginBottom: '8px' }}><strong>Nước đi tiếp theo:</strong> Sau khi lật ngửa, quân di chuyển theo đúng luật của quân cờ thực tế đó.</li>
+            <li><strong>Quân Sĩ và Tượng:</strong> Sau khi lật ngửa, không bị giới hạn trong cung hay phần sân nhà — có thể di chuyển qua sông để tấn công.</li>
+          </ul>
+
+          <h3 style={{ color: '#ffffff', fontSize: '18px', marginTop: '20px', marginBottom: '10px' }}>Hai Chế Độ Chơi Độc Đáo</h3>
+          <ul style={{ paddingLeft: '20px', marginBottom: '15px' }}>
+            <li style={{ marginBottom: '8px' }}><strong>Cờ úp tiêu chuẩn:</strong> Màu quân cố định, hệ thống tính điểm ELO để phân định thứ hạng.</li>
+            <li><strong>Cờ úp cải tiến:</strong> Màu quân ngẫu nhiên khi lật, tối ưu hóa tính bất ngờ. Không tính ELO.</li>
+          </ul>
+
+          <h3 style={{ color: '#ffffff', fontSize: '18px', marginTop: '20px', marginBottom: '10px' }}>Tại Sao Chọn Cờ Úp Pro?</h3>
+          <ul style={{ paddingLeft: '20px', marginBottom: '15px' }}>
+            <li style={{ marginBottom: '8px' }}>Hoàn toàn <strong>miễn phí</strong>, không nạp thẻ, không quảng cáo gây gián đoạn ván đấu.</li>
+            <li style={{ marginBottom: '8px' }}>Thuật toán ghép bàn thông minh theo ELO, kết nối với người chơi thật cùng trình độ.</li>
+            <li>Giao diện tối giản, hỗ trợ cả PC lẫn mobile, không cần cài đặt.</li>
+          </ul>
+
+          <div style={{ borderTop: '1px solid #333333', marginTop: '20px', paddingTop: '15px', textAlign: 'center', fontSize: '12px', color: '#888888' }}>
+            © 2026 Cờ Úp Pro. All rights reserved.
+          </div>
+        </div>
       </footer>
     </div>
   );

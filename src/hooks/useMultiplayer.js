@@ -277,7 +277,11 @@ export function useMultiplayer({
   // ── COMPUTED ──────────────────────────────────────────────────────────────
   const myColor = (() => {
     if (!matchData || !playerId) return null;
-    if (matchData.host_id  === playerId) return matchData.host_color || 'red';
+    // Chỉ tính màu khi host_color đã được assign từ server
+    // Nếu chưa có → trả null → canInteract = false → không ai đi được
+    // Tránh bug: guest fallback 'red' khi host_color=null → cả 2 đều 'red'
+    if (!matchData.host_color) return null;
+    if (matchData.host_id  === playerId) return matchData.host_color;
     if (matchData.guest_id === playerId) return matchData.host_color === 'red' ? 'black' : 'red';
     return null;
   })();

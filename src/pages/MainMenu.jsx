@@ -26,7 +26,7 @@ export default function MainMenu({ setScreen, setGameMode, setMatchId, theme, au
         if (data) {
           const now = Date.now();
           const STALE_WAITING_MS = 30 * 60 * 1000;  // 30 phut
-          const STALE_PLAYING_MS = 60 * 60 * 1000;  // 60 phut — phong playing bi bo roi
+          const STALE_PLAYING_MS = 15 * 60 * 1000;  // 15 phut — phong playing bi bo roi
 
           // Cleanup phong waiting qua 30 phut
           const staleWaiting = data
@@ -73,7 +73,24 @@ export default function MainMenu({ setScreen, setGameMode, setMatchId, theme, au
     fetchLeaderboard();
 
     const sub = supabase.channel('public:matches')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, fetchMatches)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'matches' }, fetchMatches)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'matches' }, (payload) => {
+        const m = payload.new;
+        // Xóa ngay khỏi UI khi status cancelled/finished — không chờ fetch lại
+        if (m.status === 'cancelled' || m.status === 'finished') {
+          setWaitingRooms(prev => prev.filter(r => r.id !== m.id));
+          setLiveGames(prev => prev.filter(r => r.id !== m.id));
+        } else {
+          fetchMatches();
+        }
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'matches' }, (payload) => {
+        const id = payload.old?.id;
+        if (id) {
+          setWaitingRooms(prev => prev.filter(r => r.id !== id));
+          setLiveGames(prev => prev.filter(r => r.id !== id));
+        }
+      })
       .subscribe();
     return () => supabase.removeChannel(sub);
   }, []);
@@ -125,6 +142,13 @@ export default function MainMenu({ setScreen, setGameMode, setMatchId, theme, au
       setGameMode(room.mode); setMatchId(room.id); setScreen('playing');
     } catch (err) { alert('Không thể vào phòng: ' + err.message); }
     finally { setIsLoading(false); }
+  };
+
+  // Bug 1: handleSpectate — vào phòng đang chơi dưới dạng spectator
+  const handleSpectate = (game) => {
+    setGameMode(game.mode);
+    setMatchId(game.id);
+    setScreen('playing');
   };
 
   const handleQuickMatch = async () => {
@@ -190,6 +214,7 @@ export default function MainMenu({ setScreen, setGameMode, setMatchId, theme, au
         <LobbyList
           waitingRooms={waitingRooms} liveGames={liveGames} isLoading={isLoading}
           playerId={playerId} theme={theme} onJoinRoom={handleJoinRoom}
+          onSpectate={handleSpectate}
         />
         <Leaderboard leaderboard={leaderboard} auth={auth} theme={theme} isNightMode={isNightMode} />
       </div>

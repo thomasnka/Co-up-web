@@ -84,7 +84,18 @@ export default function GameBoard({
 
   const handleExitGame = useCallback(async () => {
     if (isSpectator) { setScreen('menu'); return; }
-    if (gameStatus === 'playing' && !isWaitingForOpponent) {
+
+    // Đang chờ đối thủ (phòng chưa bắt đầu) → cancel match ngay, không cần confirm
+    if (isWaitingForOpponent && matchId) {
+      try {
+        const { supabase } = await import('../core/supabaseClient');
+        await supabase.from('matches').update({ status: 'cancelled' }).eq('id', matchId);
+      } catch (e) { console.warn('cancel match error:', e.message); }
+      setScreen('menu');
+      return;
+    }
+
+    if (gameStatus === 'playing') {
       if (window.confirm('Thoát trận giữa chừng bạn sẽ bị xử thua. Xác nhận thoát?')) {
         if (matchId && !isSpectator) await syncResult(`resign_${currentTurn}`);
         setScreen('menu');

@@ -218,7 +218,8 @@ export function useGameState({
       if (isCapture) {
         setCapturedPieces(prev => ({
           ...prev,
-          [clickedPiece.color]: [...prev[clickedPiece.color], { ...clickedPiece, isHidden: false }],
+          // Bug3 fix: giữ nguyên isHidden của quân bị ăn — không force reveal
+          [clickedPiece.color]: [...prev[clickedPiece.color], clickedPiece],
         }));
       }
 
@@ -269,7 +270,8 @@ export function useGameState({
       const newLog = [{ entry: logEntry, color: currentTurn === 'red' ? theme.redText : theme.blackText }, ...historyLog];
       const newLastMove = { from: { row: selectedPiece.row, col: selectedPiece.col }, to: { row: targetRow, col: targetCol } };
       const newCaptured = isCapture
-        ? { ...capturedPieces, [clickedPiece.color]: [...capturedPieces[clickedPiece.color], { ...clickedPiece, isHidden: false }] }
+        // Bug3 fix: giữ nguyên isHidden
+        ? { ...capturedPieces, [clickedPiece.color]: [...capturedPieces[clickedPiece.color], clickedPiece] }
         : capturedPieces;
 
       setPieces(nextPieces);

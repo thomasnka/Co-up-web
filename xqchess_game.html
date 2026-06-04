@@ -1,0 +1,559 @@
+
+<!DOCTYPE html>
+<html lang="vi" class="h-100">
+<head prefix="og: http://ogp.me/ns#">
+    <meta charset="utf-8">
+    <meta name="language" content="vi"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#151515"/>
+    <meta name="apple-itunes-app" content="app-id=1659608271, app-argument=https://xqchess.com/game/1374">
+    <link rel="manifest" href="/manifest.json">
+    <title>Ch&#x1A1;i C&#x1EDD; t&#x1B0;&#x1EDB;ng, C&#x1EDD; &#xFA;p online</title>
+    <meta name="description" content="Ch&#x1A1;i c&#x1EDD; t&#x1B0;&#x1EDB;ng online, c&#x1EDD; &#xFA;p online v&#xE0; gi&#x1EA3;i c&#x1EDD; th&#x1EBF; tr&#xEA;n XQChess. V&#xE0;o b&#xE0;n nhanh, g&#x1EB7;p &#x111;&#x1ED1;i th&#x1EE7; th&#x1EAD;t v&#xE0; theo d&#xF5;i c&#xE1;c v&#xE1;n &#x111;&#x1EA5;u &#x111;ang di&#x1EC5;n ra."/>
+        <meta name="robots" content="noindex,follow"/>
+        <link rel="canonical" href="https://xqchess.com/game/1374"/>
+    <link rel="shortcut icon" href="/favicon.ico">
+        <link href="/libs/bootswatch/5.2.2/slate/bootstrap.min.css" rel="stylesheet" />
+    <link href="/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="/css/site.css?v=SQW9tw8YQ2jkNSMlLVO2nxYld1cL0F1QAEeTt6B7iC8" rel="stylesheet" />
+    <link href="/css/xq-app.css?v=xGVaZM9nZXxWKkzUjZGFvHI_tEhTQq9ohMU6WES1yNg" rel="stylesheet" />
+    <meta property="fb:app_id" content="1610233259240926"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:site_name" content="XQchess"/>
+        <meta property="og:url" content="https://xqchess.com/game/1374"/>
+    <meta property="og:title" content="Ch&#x1A1;i C&#x1EDD; t&#x1B0;&#x1EDB;ng, C&#x1EDD; &#xFA;p online"/>
+    <meta property="og:description" content="Ch&#x1A1;i c&#x1EDD; t&#x1B0;&#x1EDB;ng online, c&#x1EDD; &#xFA;p online v&#xE0; gi&#x1EA3;i c&#x1EDD; th&#x1EBF; tr&#xEA;n XQChess. V&#xE0;o b&#xE0;n nhanh, g&#x1EB7;p &#x111;&#x1ED1;i th&#x1EE7; th&#x1EAD;t v&#xE0; theo d&#xF5;i c&#xE1;c v&#xE1;n &#x111;&#x1EA5;u &#x111;ang di&#x1EC5;n ra."/>
+    <meta property="og:image" content="https://xqchess.com/images/home.jpg"/>
+    
+    <link href="/libs/nprogress/0.2.0/nprogress.min.css" rel="stylesheet" />
+    <link href="/libs/toastr.js/2.1.4/toastr.min.css" rel="stylesheet" />
+    <link href="/css/flags.css" rel="stylesheet" />
+
+    
+        <script type="d2509a02b45de66ef91fda22-text/javascript">
+        (function () {
+            var KEY = 'xq.ads.firstViewDone';
+            var seen = false;
+            try { seen = !!localStorage.getItem(KEY); } catch (e) { /* private mode: assume seen, show ads */ seen = true; }
+
+            function loadAdsense() {
+                if (document.querySelector('script[data-xq-adsense-loader]')) return;
+                var s = document.createElement('script');
+                s.async = true;
+                s.crossOrigin = 'anonymous';
+                s.dataset.xqAdsenseLoader = '1';
+                s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9076504767982474';
+                document.head.appendChild(s);
+            }
+
+            if (!seen) {
+                (window.adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 1;
+                document.documentElement.classList.add('xq-hide-ads-first-view');
+                try { localStorage.setItem(KEY, '1'); } catch (e) { /* swallow */ }
+                return;
+            }
+
+            if ('requestIdleCallback' in window) {
+                requestIdleCallback(loadAdsense, {timeout: 2500});
+            } else {
+                window.addEventListener('load', function () {
+                    window.setTimeout(loadAdsense, 1000);
+                });
+            }
+        })();
+    </script>
+    <script type="d2509a02b45de66ef91fda22-text/javascript">
+        (function () {
+            function isFilled(wrap) {
+                var ins = wrap.querySelector('ins.adsbygoogle');
+                if (!ins) return true;
+                if (ins.getAttribute('data-ad-status') === 'unfilled') return false;
+                var iframe = ins.querySelector('iframe');
+                return !!(iframe && iframe.offsetHeight > 30);
+            }
+            function init() {
+                document.querySelectorAll('.xq-ad-wrap').forEach(function (wrap) {
+                    var ins = wrap.querySelector('ins.adsbygoogle');
+                    if (!ins) return;
+                    var obs = new MutationObserver(function () {
+                        if (ins.getAttribute('data-ad-status') === 'unfilled') {
+                            obs.disconnect();
+                            wrap.style.display = 'none';
+                        }
+                    });
+                    obs.observe(ins, { attributes: true, attributeFilter: ['data-ad-status'] });
+                    setTimeout(function () {
+                        obs.disconnect();
+                        if (!isFilled(wrap)) wrap.style.display = 'none';
+                    }, 4000);
+                });
+            }
+            if (document.readyState === 'complete') {
+                init();
+            } else {
+                window.addEventListener('load', init);
+            }
+        })();
+    </script>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-611LDM1GL7" type="d2509a02b45de66ef91fda22-text/javascript"></script>
+<script type="d2509a02b45de66ef91fda22-text/javascript">
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-611LDM1GL7');
+  setInterval(function() {
+    gtag('event', 'ping', {event_category: 'ExtendSession'});
+  }, 5*60*1000);
+</script>
+    <script src="/js/web-vitals-lite.js?v=BtPlRUTN_6_75URbKS0vCnhovOXZ6UkUi7_nOzcPKGE" defer type="d2509a02b45de66ef91fda22-text/javascript"></script>
+</head>
+<body class="d-flex flex-column h-100 xq-app-body" data-auth-state="anonymous"><a href="https://xqchess.com/cdn-cgi/content?id=09AKF9EInDGNez.zXG3edMNvlpeLiSejvHQntF37Xog-1780540051.1678033-1.2.1.1-axXh203G8TOc79oi5fiFaBNMGsgbuPmO2K_6.hOxj08" aria-hidden="true" rel="nofollow noopener" style="display: none !important; visibility: hidden !important"></a>
+<div class="xq-bg-ambient" aria-hidden="true">
+    <span class="xq-bg-rain xq-bg-rain--one"></span>
+    <span class="xq-bg-rain xq-bg-rain--two"></span>
+    <span class="xq-bg-rain xq-bg-rain--three"></span>
+    <span class="xq-bg-rain xq-bg-rain--four"></span>
+    <span class="xq-bg-rain xq-bg-rain--five"></span>
+    <span class="xq-bg-rain xq-bg-rain--six"></span>
+    <span class="xq-bg-rain xq-bg-rain--seven"></span>
+    <span class="xq-bg-rain xq-bg-rain--eight"></span>
+    <span class="xq-bg-rain xq-bg-rain--nine"></span>
+    <span class="xq-bg-rain xq-bg-rain--ten"></span>
+    <span class="xq-bg-rain xq-bg-rain--eleven"></span>
+    <span class="xq-bg-rain xq-bg-rain--twelve"></span>
+    <span class="xq-bg-leaf xq-bg-leaf--one"></span>
+    <span class="xq-bg-leaf xq-bg-leaf--two"></span>
+    <span class="xq-bg-leaf xq-bg-leaf--three"></span>
+    <span class="xq-bg-leaf xq-bg-leaf--four"></span>
+</div>
+<main class="flex-shrink-0 xq-app-main">
+    <div id="xq-announcement" class="xq-announcement" role="status" data-version="v1" hidden>
+    <div class="xq-announcement__inner">
+        <span class="xq-announcement__icon" aria-hidden="true">🎉</span>
+        <p class="xq-announcement__text">
+            <span class="xq-announcement__text--long">
+                Website XQChess vừa được nâng cấp. Nếu bạn có nhận xét hay góp ý,
+                vui lòng gửi email cho chúng tôi tại
+                <a href="/cdn-cgi/l/email-protection#7d1e1213091c1e093d050c1e15180e0e531e1210"><span class="__cf_email__" data-cfemail="65060a0b11040611251d14060d0016164b060a08">[email&#160;protected]</span></a>.
+                Cảm ơn bạn!
+            </span>
+            <span class="xq-announcement__text--short">
+                Website vừa nâng cấp — góp ý gửi
+                <a href="/cdn-cgi/l/email-protection#7615191802171502360e07151e1305055815191b"><span class="__cf_email__" data-cfemail="82e1edecf6e3e1f6c2faf3e1eae7f1f1ace1edef">[email&#160;protected]</span></a>
+            </span>
+        </p>
+        <button type="button" class="xq-announcement__close" aria-label="Đóng">×</button>
+    </div>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="d2509a02b45de66ef91fda22-text/javascript">
+    (function () {
+        var KEY = 'xqAnnouncementDismissedV1';
+        var el = document.getElementById('xq-announcement');
+        if (!el) return;
+        var shouldShow = true;
+        try {
+            if (localStorage.getItem(KEY) === '1') {
+                shouldShow = false;
+            }
+        } catch (e) { /* localStorage may be blocked; show anyway */ }
+        if (!shouldShow) {
+            el.remove();
+            return;
+        }
+        el.hidden = false;
+        var btn = el.querySelector('.xq-announcement__close');
+        if (btn) {
+            btn.addEventListener('click', function () {
+                try { localStorage.setItem(KEY, '1'); } catch (e) { /* ignore */ }
+                el.remove();
+            });
+        }
+    })();
+</script>
+
+    
+<nav class="navbar navbar-expand-lg navbar-dark xq-top-nav" aria-label="xqchess nav">
+    <div class="container-fluid xq-top-nav__inner px-3 px-lg-4">
+        <a class="navbar-brand" href="/">
+            <i class="logo"></i>
+        </a>
+
+        <div class="d-flex align-items-center gap-2 d-lg-none">
+                <a class="xq-auth-cta xq-auth-cta--primary xq-nav-auth__mobile"
+                   href="/user/register?returnUrl=%2Fgame%2F1374&amp;from=nav"
+                   data-auth-cta="register" data-auth-surface="nav_mobile">
+                    Tạo tài khoản
+                </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-navbar" aria-controls="offcanvas-navbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+
+        <div class="offcanvas offcanvas-end xq-offcanvas" tabindex="-1" id="offcanvas-navbar" aria-labelledby="offcanvas-label">
+            <div class="offcanvas-header navbar-brand">
+                <a class="offcanvas-title" id="offcanvas-label" href="/">
+                    <i class="logo"></i>
+                </a>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+
+            <hr class="m-0 border-dark d-none"/>
+
+            <div class="offcanvas-body">
+                <ul class="navbar-nav justify-content-start flex-grow-1 pe-3">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/matches">Trận đấu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/puzzle">Cờ thế</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/app">Tải app</a>
+                    </li>
+                </ul>
+
+                <ul class="navbar-nav d-flex mt-3 mt-lg-0">
+                        <li class="nav-item">
+                            <div class="xq-nav-auth">
+                                <a class="xq-auth-cta xq-auth-cta--ghost"
+                                   href="/user/login?returnUrl=%2Fgame%2F1374&amp;from=nav"
+                                   data-auth-cta="login" data-auth-surface="nav">
+                                    Đăng nhập
+                                </a>
+                                <a class="xq-auth-cta xq-auth-cta--primary"
+                                   href="/user/register?returnUrl=%2Fgame%2F1374&amp;from=nav"
+                                   data-auth-cta="register" data-auth-surface="nav">
+                                    Tạo tài khoản
+                                </a>
+                            </div>
+                        </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+    <div class="container xq-shell">
+        
+
+        
+
+    <div class="card mb-3">
+        <div class="card-body">
+            Bạn chưa đăng nhập. Hãy
+            <a href="/user/login?from=invite_card"
+               data-auth-cta="login" data-auth-surface="invite_card">
+                <b>đăng nhập</b>
+            </a> hoặc
+            <a href="/user/register?from=invite_card"
+               data-auth-cta="register" data-auth-surface="invite_card">
+                <b>đăng ký</b>
+            </a> để lưu trận đấu và xếp hạng!
+        </div>
+    </div>
+
+
+<div class="xq-game-shell">
+    <div class="xq-game-layout">
+        <main class="xq-game-main" id="b">
+        <section class="xq-panel xq-board-stage">
+            <div class="xq-player" data-player="black" data-bind="template: { name: 'xq-player' }"></div>
+            <div class="xq-board-wrap">
+                <div class="xq-board"></div>
+            </div>
+            <div class="xq-player" data-player="red" data-bind="template: { name: 'xq-player' }"></div>
+        </section>
+        </main>
+
+        <aside class="xq-game-side">
+            <div class="xq-game-desktop-ad">
+                    <aside class="xq-ad-wrap xq-ad-wrap--game mt-3" aria-label="Quảng cáo">
+        <div class="xq-ad-label">Quảng cáo</div>
+            <ins class="adsbygoogle xq-ad-unit"
+                 style="display:block"
+                 data-ad-client="ca-pub-9076504767982474"
+                 data-ad-slot="3191337893"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script type="d2509a02b45de66ef91fda22-text/javascript">
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+    </aside>
+
+            </div>
+            <section class="xq-feed-card xq-game-tools">
+                <div data-role="action" class="xq-game-actions invisible" data-bind="css:{'xq-game-actions--viewer': viewerOnly}">
+                    <div class="xq-action-group" data-bind="visible: !viewerOnly()">
+                        <button type="button" class="btn btn-warning btn-sm xq-action-btn xq-action-resign" data-bind="click: resignClick, visible: resignable">Chịu thua</button>
+                        <button type="button" class="btn btn-warning btn-sm xq-action-btn xq-action-draw" data-bind="click: drawClick, visible: drawable">Cầu hòa</button>
+                        <button type="button" class="btn btn-warning btn-sm xq-action-btn xq-action-withdraw" data-bind="click: withdrawClick, visible: withdrawable">Hủy cầu hòa</button>
+                        <button type="button" class="btn btn-warning btn-sm xq-action-btn xq-action-rematch" data-bind="click: rematchClick, enable: canRematch, visible: showRematch, text: textRematch">Chơi lại</button>
+                        <button type="button" class="btn btn-warning btn-sm xq-action-btn xq-action-join" data-bind="click: joinClick, visible: joinable">Vào</button>
+                    </div>
+                    <div class="xq-action-exit">
+                        <div class="xq-sound-control" data-role="sound-control">
+                            <button type="button" class="btn btn-secondary btn-sm xq-sound-toggle"
+                                    data-bind="click: soundToggleClick, attr:{title: soundMuted() ? 'Bật âm thanh' : 'Tắt âm thanh'}">
+                                <span class="fa" data-bind="css:{'fa-volume-off': soundMuted(),'fa-volume-up': !soundMuted()}" aria-hidden="true"></span>
+                            </button>
+                            <input class="xq-sound-volume" type="range" min="0" max="100" step="5"
+                                   data-bind="value: soundVolume, valueUpdate: 'input', event:{input: soundVolumeInput, change: soundVolumeInput}, enable: !soundMuted(), attr:{title: 'Âm lượng'}"/>
+                        </div>
+                        <button type="button" class="btn btn-info btn-sm xq-action-quit" data-bind="click: quitClick">
+                            <span class="fa fa-log-out" aria-hidden="true"></span>
+                            Thoát
+                        </button>
+                    </div>
+                </div>
+                <div data-role="chat" class="chat xq-game-chat">
+                    <div class="messages" data-bind="foreach: messages, scrollDown: scrollDown">
+                        <div data-bind="template: { name: 'xq-chat', data: $data }">
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-secondary btn-sm" data-bind="click: lockClick" title="khóa/mở chat">
+                            <span class="fa" data-bind="css:{'fa-ban-circle':locked(),'fa-ok':!locked()}" aria-hidden="true"></span>
+                            <span class="lock" data-bind="text:locked()?'Khóa':'Mở'"></span>
+                        </button>
+                        <button class="btn btn-secondary btn-sm" data-bind="click: clearClick" title="xóa chat">
+                            <span class="fa fa-trash" aria-hidden="true"></span>
+                            Xóa
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm xq-chat-copy-url"
+                                data-bind="click: copyMatchUrlClick, visible: canCopyMatchUrl, enable: !copyMatchUrlBusy(), attr:{title: matchUrl}">
+                            <span class="fa fa-link" aria-hidden="true"></span>
+                            <span data-bind="text: copyMatchUrlText"></span>
+                        </button>
+                        <span class="xq-chat-viewers" data-bind="visible: viewers()>0, text: '{0} người xem'.format(viewers())"></span>
+                    </div>
+                        <div class="input-group input-group-sm">
+                            <input class="form-control" type="text" disabled
+                                   placeholder="Đăng nhập để chat..."
+                                   aria-label="Chat (cần đăng nhập)"
+                                   readonly />
+                            <a class="btn btn-outline-secondary" href="/user/login?returnUrl=%2Fgame%2F1374&amp;from=game_chat" rel="nofollow"
+                               data-auth-cta="login" data-auth-surface="game_chat">Đăng nhập</a>
+                        </div>
+                </div>
+
+                <div data-role="pieces" class="dead-pieces xq-game-dead-pieces">
+                    <div class="xq-dead-pieces" data-color="black">
+                    </div>
+                    <div class="xq-dead-pieces" data-color="red">
+                    </div>
+                </div>
+            </section>
+            
+
+        </aside>
+    </div>
+</div>
+<div id="result-modal" class="modal fade xq-result-modal" tabindex="-1" role="dialog" aria-labelledby="resultLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable xq-result-dialog">
+        <div class="modal-content xq-result-content">
+            <div class="modal-header">
+                <h4 class="modal-title" data-bind="text:title, css:{'text-danger':lose,'text-success':win}"></h4>
+                <button type="button" class="btn-close xq-result-dismiss" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    <span class="xq-result-player"><strong data-bind="text:redName"></strong><span class="xq-result-side">Quân đỏ</span></span>
+                    <span class="xq-result-score" data-bind="text:redScore, css:{'text-danger': redScore()<0, 'text-success': redScore()>0}"></span>
+                </p>
+                <p>
+                    <span class="xq-result-player"><strong data-bind="text:blackName"></strong><span class="xq-result-side">Quân đen</span></span>
+                    <span class="xq-result-score" data-bind="text:blackScore, css:{'text-danger': blackScore()<0, 'text-success': blackScore()>0}"></span>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn xq-result-close" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn xq-result-rematch" data-bind="visible: playing, click: rematchClick">Chơi lại</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="resign-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="resignLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm" style="min-width: 302px; max-width: 338px; margin-left: auto; margin-right: auto; margin-top: 60px;">
+        <div class="modal-content">
+            <div class="modal-header" style="border-bottom: 0; padding: 10px 10px 0 10px;">
+                <h4 class="modal-title">Chịu thua</h4>
+            </div>
+            <div class="modal-body" style="padding: 10px;">
+                <p>
+                    Bạn muốn thua?
+                </p>
+            </div>
+            <div class="modal-footer" style="border-top: 0; padding: 10px; padding-top: 0;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" data-bind="click: confirmResignClick">Chịu thua</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="hidden" data-role="game-sounds">
+    <audio id="game-audio" data-sound="join" preload="auto">
+        <source src="/sounds/join.ogg" type="audio/ogg">
+        <source src="/sounds/join.mp3" type="audio/mpeg">
+    </audio>
+    <audio data-sound="move" preload="auto">
+        <source src="/sounds/move.mp3" type="audio/mpeg">
+    </audio>
+    <audio data-sound="eat" preload="auto">
+        <source src="/sounds/eat.mp3" type="audio/mpeg">
+    </audio>
+    <audio data-sound="check" preload="auto">
+        <source src="/sounds/check.mp3" type="audio/mpeg">
+    </audio>
+</div>
+
+
+    </div>
+</main>
+
+
+<footer class="footer mt-auto py-3 xq-footer">
+    <div class="container text-center">
+        <ul class="list-inline">
+            <li class="list-inline-item">
+                <a href="/contact" class="text-muted">Liên hệ</a>
+            </li>
+            <li class="list-inline-item">
+                <a href="/tos" class="text-muted">Điều khoản sử dụng</a>
+            </li>
+	            <li class="list-inline-item">
+	                <a href="/privacy" class="text-muted">Chính sách quyền riêng tư</a>
+	            </li>
+	            <li class="list-inline-item">
+	                <a href="/app" class="text-muted">Tải app</a>
+	            </li>
+	        </ul>
+        <p class="text-muted">
+            © 2026
+            <a href="/" class="n">
+                <span class="text-muted">xqchess.com</span>
+            </a>
+        </p>
+    </div>
+</footer>
+
+
+<script src="/libs/jquery/3.5.1/jquery.min.js" type="d2509a02b45de66ef91fda22-text/javascript"></script>
+<script src="/libs/bootstrap/5.2.2/js/bootstrap.bundle.min.js" type="d2509a02b45de66ef91fda22-text/javascript"></script>
+<script src="/js/auth-analytics.js?v=XzL5LMhAFGZYGYOdrLMzUUScjiJpyN3pG2W147r8ur4" type="d2509a02b45de66ef91fda22-text/javascript"></script>
+
+    <script type="text/html" id="xq-player">
+        <div class="xq-player-inner" data-bind="visible: loaded">
+            <div class="name">
+                <span class="state" data-bind="css: state, attr:{title: state}"></span>
+                <a href="#" data-bind="attr:{href: href}" target="_blank">
+                    <span data-bind="html:username"></span>
+                </a>
+                <span class="xq-2026-score-pill xq-2026-score-pill--inline" data-bind="visible: score() != null" style="margin-left:8px;">
+                    <span data-bind="text: score"></span>
+                </span>
+            </div>
+            <div class="time" aria-label="Thời gian còn lại">
+                <div class="turn text-danger">
+                    <strong data-bind="text: turnTime">&nbsp;</strong>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/html" id="xq-chat">
+        <!-- ko if: system -->
+        <span class="text-danger" data-bind="html: message"></span>
+        <!-- /ko -->
+        <!-- ko ifnot: system -->
+        <!-- ko if: anon -->
+        <span>ẩn danh:</span>
+        <span data-bind="html: message"></span>
+        <!-- /ko -->
+        <!-- ko ifnot: anon -->
+        <a href="#" target="_blank" data-bind="attr: {href: '/player/' + username}, text: username"></a>
+        <span>:</span>
+        <span data-bind="html: message"></span>
+        <!-- /ko -->
+        <!-- /ko -->
+    </script>
+
+    <script src="/libs/nprogress/0.2.0/nprogress.min.js" type="d2509a02b45de66ef91fda22-text/javascript"></script>
+    <script src="/libs/jquery-cookie/1.4.1/jquery.cookie.min.js" type="d2509a02b45de66ef91fda22-text/javascript"></script>
+    <script src="/libs/modernizr/2.8.3/modernizr.min.js" type="d2509a02b45de66ef91fda22-text/javascript"></script>
+    <script src="/js/jxq.js?v=a0kLq8MNmhrlRevtVtCFQuP2FgDrTSjSWwKSSY94bFs" type="d2509a02b45de66ef91fda22-text/javascript"></script>
+    <script type="d2509a02b45de66ef91fda22-text/javascript">
+        $('.xq-board').xq();
+        NProgress.configure({ trickleRate: 0.05, trickleSpeed: 100, showSpinner: false }).start();
+    </script>
+    <script src="/libs/toastr.js/2.1.4/toastr.min.js" type="d2509a02b45de66ef91fda22-text/javascript"></script>
+    <script src="/libs/knockout/3.5.1/knockout-latest.min.js" type="d2509a02b45de66ef91fda22-text/javascript"></script>
+    <script src="/libs/microsoft-signalr/6.0.11/signalr.min.js" type="d2509a02b45de66ef91fda22-text/javascript"></script>
+    <script type="d2509a02b45de66ef91fda22-text/javascript">
+        var i18n = {
+            Rematch: 'Chơi lại',
+            Rematching: 'Chơi lại...',
+            Red: 'Quân đỏ',
+            Black: 'Quân đen',
+            Anonymous: 'Ẩn danh',
+            Victorious: 'Thắng',
+            Lose: 'Thua',
+
+            JoinedThisGame: 'Bạn vừa vào bàn.',
+            FailToJoin: 'Không thể vào bàn vì ai đó đã vào trước bạn, hoặc bạn chưa đăng nhập nhưng người chơi hiện tại đã đăng nhập',
+            ConfirmResign: 'Bạn muốn thua?',
+            CannotCancelDrawRequest: 'Bạn không thể hủy lần cầu hòa cuối cùng.',
+            ConfirmQuit: 'Bạn sẽ thua nếu thoát. Bạn muốn vậy?',
+            LoginToChat: 'Bạn phải đăng nhập mới có thể chat',
+            JoinedFormat: '{0} vào bàn',
+            LeavedFormat: '{0} thoát',
+            AcceptDrawFormat: '{0} chấp nhận lời cầu hòa.',
+            SendFirstDrawFormat: '{0} gửi cầu hòa lần đầu.',
+            SendSecondDrawFormat: '{0} gửi cầu hòa lần hai.',
+            SendLastDrawFormat: '{0} gửi cầu hòa lần cuối.',
+            CancelDrawFormat: '{0} hủy lời cầu hòa.',
+            LoggedFromOther: 'Bạn đã đăng nhập từ thiết bị/hệ thống khác.',
+            GameOverFormat: '{0} thắng {1} điểm.',
+            GameEndFormat: '{0} thắng.',
+            GameDraw: 'Hòa.',
+            GotPointFormat: '{0} được {1} điểm.',
+            SeeMatchFormat: 'Xem trận đấu <a href="{0}" target="_blank">ở đây</a>.',
+            GameDestroyed: 'Trận đấu đã bị hủy.',
+            Reconnecting: 'Mất kết nối, đang kết nối lại...',
+            Reconnected: 'Đã kết nối lại.',
+            Disconnected: 'Bạn đã bị mất kết nối. Tải lại trang nếu hệ thống không tự kết nối lại.',
+            JoinedAsViewer: 'Bạn đang xem trận đấu.',
+            WaitingOther: 'Đang chờ người chơi.',
+            TitleWaitingFormat: '{0} - đang chờ người chơi',
+            CopyMatchUrl: 'Chép link',
+            CopiedMatchUrl: 'Đã chép',
+            CopyMatchUrlFailed: 'Không thể sao chép link.',
+            TextPlayWithAnonymous: 'Đối thủ chưa đăng nhập. Bạn sẽ không được/mất điểm dù thắng hay thua.',
+            TextPlayAsAnonymous: 'Bạn chưa <a href="/user/login">đăng nhập</a>. Hãy <a href="/user/login">đăng nhập</a> để tính điểm sau mỗi trận đấu!'
+        };
+    </script>
+    <script src="/js/game.js?v=mPuFiMG4qrbIAcPSaUs0K4Fu8dMoGab0aNo8lRVD3vQ" type="d2509a02b45de66ef91fda22-text/javascript"></script>
+
+    <script type="d2509a02b45de66ef91fda22-text/javascript">
+    var engine = new Game.Engine();
+    engine.initialize(function (s, v) {
+        $('[data-role=score-' + v + ']').val(s);
+    });
+    // Unlock audio on first user gesture so spectators landing directly on
+    // /game/<id> hear move sounds without flipping any setting. See
+    // Game.Helper.primeAudio JSDoc for the autoplay-policy rationale.
+    Game.Helper.primeAudio();
+    document.getElementById('b').scrollIntoView();
+    </script>
+
+<script type="d2509a02b45de66ef91fda22-text/javascript">
+        if ('serviceWorker' in navigator) {
+            if (!navigator.serviceWorker.controller) {
+                navigator.serviceWorker.register('/sw.js').then(function (reg) {
+                    console.log('[PWA] scope:' + reg.scope);
+                });
+            }
+        }
+</script>
+<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="d2509a02b45de66ef91fda22-|49" defer></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0637fb7cb8cb6a6',t:'MTc4MDU0MDA1MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

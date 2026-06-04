@@ -16,7 +16,13 @@ export default function GameBoard({
   const gameRef = useRef(null);
   const [showDrawBanner, setShowDrawBanner] = useState(false);
   const [localDemoMode, setLocalDemoMode] = useState(false);
-  const [revealCaptured, setRevealCaptured] = useState(false); // false=úp, true=lộ tên quân đã ăn
+  const [revealCaptured, setRevealCaptured] = useState(false);
+  const [isMuted, setIsMuted] = useState(() => localStorage.getItem('xq.muted') === 'true');
+  const [showChat, setShowChat] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+  const chatEndRef = useRef(null);
+  const audioCtxRef = useRef(null);
 
   const handleRemoteMove = useCallback((remoteState) => {
     gameRef.current?.applyRemoteState(remoteState);
@@ -71,7 +77,7 @@ export default function GameBoard({
   const {
     pieces, currentTurn, historyLog, capturedPieces, lastMove,
     shakingPieceId, selectedPiece, kingInCheckId, gameStatus, timeLeft,
-    validMoves, movedPieceId,
+    validMoves, movedPieceId, lastMoveSound,
     initGame, handleInteraction, handleDraw, handleResign,
     formatTime, activateDemo, getResultMessage, acceptDraw, isDemoMode,
     registerTimerDisplay,
@@ -79,6 +85,100 @@ export default function GameBoard({
 
   // BUG-4 FIX: sync localDemoMode khi game.isDemoMode thay đổi
   useEffect(() => { setLocalDemoMode(isDemoMode); }, [isDemoMode]);
+
+  // ── WEB AUDIO SOUND ENGINE ─────────────────────────────────────────────────
+  // Dùng oscillator — không cần file mp3, không bị autoplay block
+  const playSound = useCallback((type) => {
+    if (isMuted) return;
+    try {
+      if (!audioCtxRef.current) audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = audioCtxRef.current;
+      if (ctx.state === 'suspended') ctx.resume();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      const now = ctx.currentTime;
+      switch (type) {
+        case 'move':  // tiếng gõ nhẹ — click ngắn
+          osc.type = 'sine'; osc.frequency.setValueAtTime(800, now);
+          osc.frequency.exponentialRampToValueAtTime(400, now + 0.08);
+          gain.gain.setValueAtTime(0.18, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+          osc.start(now); osc.stop(now + 0.09); break;
+        case 'eat':   // tiếng gõ mạnh hơn — 2 tầng
+          osc.type = 'triangle'; osc.frequency.setValueAtTime(600, now);
+          osc.frequency.exponentialRampToValueAtTime(200, now + 0.15);
+          gain.gain.setValueAtTime(0.28, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+          osc.start(now); osc.stop(now + 0.16); break;
+        case 'check': // tiếng cảnh báo — 2 nốt
+          osc.type = 'square'; osc.frequency.setValueAtTime(880, now);
+          osc.frequency.setValueAtTime(1100, now + 0.1);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.setValueAtTime(0.12, now + 0.1);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+          osc.start(now); osc.stop(now + 0.25); break;
+        case 'join':  // tiếng chào — nốt lên
+          osc.type = 'sine'; osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+          gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+          osc.start(now); osc.stop(now + 0.2); break;
+        default: return;
+      }
+    } catch(e) {}
+  }, [isMuted]);
+
+  // Toggle mute + lưu localStorage
+  const toggleMute = useCallback(() => {
+    setIsMuted(prev => { const next = !prev; localStorage.setItem('xq.muted', next); return next; });
+  }, []);
+
+  // Play sound khi lastMoveSound thay đổi
+  useEffect(() => {
+    if (!lastMoveSound) return;
+    playSound(lastMoveSound);
+  }, [lastMoveSound]); // eslint-disable-line
+
+  // ── CHAT ───────────────────────────────────────────────────────────────────
+  // Scroll xuống cuối khi có tin mới
+  useEffect(() => {
+    if (showChat) chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages, showChat]);
+
+  // Nhận chat message từ WS
+  useEffect(() => {
+    if (!mp.registerCallbacks) return;
+    mp.registerCallbacks({
+      onChatMessage: (msg) => {
+        setChatMessages(prev => [...prev, { from: 'opp', text: msg.text, time: Date.now() }]);
+      },
+      onOpponentJoined: () => playSound('join'),
+    });
+  }, []); // eslint-disable-line
+
+  const sendChat = useCallback(() => {
+    const text = chatInput.trim();
+    if (!text || !matchId) return;
+    mp.wsSendRef?.current?.({ type: 'chat', text, from: playerId });
+    setChatMessages(prev => [...prev, { from: 'me', text, time: Date.now() }]);
+    setChatInput('');
+  }, [chatInput, matchId, mp, playerId]);
+
+  // ── FLIP 3D tracking ───────────────────────────────────────────────────────
+  const [flippingPieceId, setFlippingPieceId] = useState(null);
+  const prevPiecesRef = useRef([]);
+  useEffect(() => {
+    const prev = prevPiecesRef.current;
+    if (prev.length === 0) { prevPiecesRef.current = pieces; return; }
+    // Tìm quân vừa lật (isHidden true → false)
+    for (const p of pieces) {
+      const old = prev.find(o => o.id === p.id);
+      if (old && old.isHidden && !p.isHidden) {
+        setFlippingPieceId(p.id);
+        setTimeout(() => setFlippingPieceId(null), 400);
+        break;
+      }
+    }
+    prevPiecesRef.current = pieces;
+  }, [pieces]);
 
   // Sync kết quả lên Supabase khi gameStatus thay đổi — cả 2 bên đều gọi
   // Đảm bảo timeout/checkmate từ bên bị động cũng được update DB
@@ -245,6 +345,7 @@ export default function GameBoard({
           shakingPieceId={shakingPieceId} kingInCheckId={kingInCheckId}
           lastMove={lastMove} isFlipped={isFlipped}
           validMoves={validMoves} movedPieceId={movedPieceId}
+          flippingPieceId={flippingPieceId}
           onPieceClick={(row, col, piece) => handleInteraction(row, col, piece)}
           onCellClick={(row, col) => handleInteraction(row, col, null)}
         />
@@ -328,11 +429,66 @@ export default function GameBoard({
             style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: revealCaptured ? (isNightMode ? '#444' : '#e8f5e9') : theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
             {revealCaptured ? '👁' : '🫣'}
           </button>
+          <button onClick={toggleMute} title={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+            style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
+            {isMuted ? '🔇' : '🔊'}
+          </button>
+          {matchId && !isSpectator && (
+            <button onClick={() => setShowChat(v => !v)} title="Chat"
+              style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: showChat ? (isNightMode ? '#444' : '#e3f2fd') : theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', position: 'relative' }}>
+              💬
+              {chatMessages.filter(m => m.from === 'opp').length > 0 && !showChat && (
+                <span style={{ position: 'absolute', top: '4px', right: '4px', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#f44336' }} />
+              )}
+            </button>
+          )}
           <button onClick={() => setIsNightMode(!isNightMode)} title={isNightMode ? 'Chế độ sáng' : 'Chế độ tối'}
             style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
             {isNightMode ? '☀️' : '🌙'}
           </button>
         </div>
+
+        {/* Chat box — hiển thị khi showChat=true, nằm trên biên bản */}
+        {showChat && matchId && !isSpectator && (
+          <div style={{ backgroundColor: theme.panelBg, borderRadius: '8px', border: `1px solid ${theme.lines}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div style={{ padding: '8px 12px', backgroundColor: isNightMode ? '#222' : '#f0f0f0', borderBottom: `1px solid ${theme.lines}`, fontWeight: 'bold', color: theme.textColor, fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>💬 Chat</span>
+              <button onClick={() => setShowChat(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: theme.textColor, fontSize: '1rem', padding: '0 4px' }}>✕</button>
+            </div>
+            {/* Messages */}
+            <div style={{ height: '140px', overflowY: 'auto', padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {chatMessages.length === 0 ? (
+                <div style={{ opacity: 0.4, fontStyle: 'italic', textAlign: 'center', marginTop: '16px', fontSize: '0.8rem', color: theme.textColor }}>Chưa có tin nhắn</div>
+              ) : (
+                chatMessages.map((m, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: m.from === 'me' ? 'flex-end' : 'flex-start' }}>
+                    <div style={{
+                      maxWidth: '80%', padding: '5px 10px', borderRadius: m.from === 'me' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
+                      backgroundColor: m.from === 'me' ? '#4CAF50' : (isNightMode ? '#333' : '#e0e0e0'),
+                      color: m.from === 'me' ? '#fff' : theme.textColor,
+                      fontSize: '0.82rem', wordBreak: 'break-word',
+                    }}>{m.text}</div>
+                  </div>
+                ))
+              )}
+              <div ref={chatEndRef} />
+            </div>
+            {/* Input */}
+            <div style={{ display: 'flex', gap: '6px', padding: '8px', borderTop: `1px solid ${theme.lines}` }}>
+              <input
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && sendChat()}
+                placeholder="Nhập tin nhắn..."
+                maxLength={100}
+                style={{ flex: 1, padding: '6px 10px', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.background, color: theme.textColor, fontSize: '0.82rem', outline: 'none' }}
+              />
+              <button onClick={sendChat} style={{ padding: '6px 12px', border: 'none', borderRadius: '6px', backgroundColor: '#4CAF50', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.82rem' }}>
+                Gửi
+              </button>
+            </div>
+          </div>
+        )}
 
         <div style={{ flex: 1, minHeight: '260px', maxHeight: '450px', backgroundColor: theme.panelBg, borderRadius: '8px', border: `1px solid ${theme.lines}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <div style={{ padding: '10px 15px', backgroundColor: isNightMode ? '#222' : '#f0f0f0', borderBottom: `1px solid ${theme.lines}`, fontWeight: 'bold', color: theme.textColor, fontSize: '0.9rem' }}>

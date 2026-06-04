@@ -6,6 +6,7 @@ export default function ChessBoard({
   theme, gameMode,
   pieces, selectedPiece, shakingPieceId, kingInCheckId, lastMove,
   validMoves = [], movedPieceId = null, isFlipped = false,
+  flippingPieceId = null,
   onPieceClick, onCellClick,
 }) {
   const validMovesSet = useMemo(() =>
@@ -234,6 +235,7 @@ export default function ChessBoard({
           const isInCheck     = kingInCheckId === p.id;
           const isShaking     = shakingPieceId === p.id;
           const isJustMoved   = movedPieceId === p.id;
+          const isFlipping    = flippingPieceId === p.id;
           const isValidTarget = validMovesSet.has(`${p.row}-${p.col}`);
 
           const bgGrad    = isDay
@@ -264,7 +266,7 @@ export default function ChessBoard({
             <g
               key={p.id}
               onPointerDown={(e) => handlePiecePointer(e, p.row, p.col, p)}
-              className={isShaking ? 'shake-error' : isJustMoved ? 'piece-enter' : ''}
+              className={isShaking ? 'shake-error' : isFlipping ? 'piece-flip' : isJustMoved ? 'piece-enter' : ''}
               filter={filterAttr}
               style={{ cursor: 'pointer', touchAction: 'none' }}
             >

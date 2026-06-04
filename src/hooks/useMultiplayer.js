@@ -40,9 +40,12 @@ export function useMultiplayer({
   const onRemoteMoveRef    = useRef(onRemoteMove);
   const onMatchUpdateRef   = useRef(onMatchUpdate);
   const onDrawRequestRef   = useRef(onDrawRequest);
-  const onMoveRejectedRef  = useRef(null);   // B2: rollback callback
-  const onPieceRevealedRef = useRef(null);   // S1: piece reveal callback
-  const onOpponentJoinedRef = useRef(null);  // sound: play join khi đối thủ vào phòng
+  const onMoveRejectedRef  = useRef(null);
+  const onPieceRevealedRef = useRef(null);
+  const onOpponentJoinedRef = useRef(null);
+  const onChatMessageRef   = useRef(null);  // chat message từ đối thủ
+  // Expose wsSend qua ref để GameBoard gửi chat trực tiếp
+  const wsSendRef = useRef(null);
   useEffect(() => { onRemoteMoveRef.current  = onRemoteMove; },  [onRemoteMove]);
   useEffect(() => { onMatchUpdateRef.current = onMatchUpdate; }, [onMatchUpdate]);
   useEffect(() => { onDrawRequestRef.current = onDrawRequest; }, [onDrawRequest]);
@@ -202,6 +205,13 @@ export function useMultiplayer({
         break;
       }
 
+      case 'chat': {
+        if (msg.from !== playerId) {
+          onChatMessageRef.current?.({ text: msg.text, from: msg.from });
+        }
+        break;
+      }
+
       case 'opponent_disconnected': {
         // U1 FIX: set flag riêng thay vì nhét vào matchData
         setOpponentDisconnected(true);
@@ -260,6 +270,9 @@ export function useMultiplayer({
   useEffect(() => {
     setIsSyncing(wsStatus === 'connecting' || wsStatus === 'reconnecting');
   }, [wsStatus]);
+
+  // Expose wsSend qua ref để GameBoard dùng cho chat
+  useEffect(() => { wsSendRef.current = wsSend; }, [wsSend]);
 
   // xqchess reconnect: resyncAfterReconnect gọi lại joinGame để get full state
   // Tương đương: gửi request_state_recovery → server trả gameState qua 'state_recovery'
@@ -367,10 +380,11 @@ export function useMultiplayer({
   }, [wsSend, playerId, matchId]);
 
   // ── REGISTER CALLBACKS ───────────────────────────────────────────────────
-  const registerCallbacks = useCallback(({ onMoveRejected, onPieceRevealed, onOpponentJoined } = {}) => {
+  const registerCallbacks = useCallback(({ onMoveRejected, onPieceRevealed, onOpponentJoined, onChatMessage } = {}) => {
     if (onMoveRejected)   onMoveRejectedRef.current   = onMoveRejected;
     if (onPieceRevealed)  onPieceRevealedRef.current  = onPieceRevealed;
     if (onOpponentJoined) onOpponentJoinedRef.current = onOpponentJoined;
+    if (onChatMessage)    onChatMessageRef.current    = onChatMessage;
   }, []);
 
   // ── RETURN ─────────────────────────────────────────────────────────────────
@@ -389,6 +403,7 @@ export function useMultiplayer({
     syncResult,
     requestDraw,
     respondDraw,
-    registerCallbacks,     // B2+S1: đăng ký callbacks
+    registerCallbacks,
+    wsSendRef,             // expose để GameBoard gửi chat
   };
 }

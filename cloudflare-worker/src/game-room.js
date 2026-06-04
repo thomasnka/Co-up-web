@@ -427,6 +427,17 @@ export class GameRoom {
         break;
       }
 
+      case 'chat': {
+        // Relay chat message tới đối thủ + spectators
+        // msg: { type, text, from: playerId }
+        const session = this.sessions.get(playerId);
+        if (!session || !msg.text) break;
+        // Sanitize: max 200 chars
+        const safeText = String(msg.text).slice(0, 200);
+        this._broadcast({ type: 'chat', text: safeText, from: playerId }, playerId);
+        break;
+      }
+
       case 'ping': {
         const session = this.sessions.get(playerId);
         if (session) session.lastPong = Date.now();

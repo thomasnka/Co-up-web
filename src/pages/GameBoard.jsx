@@ -8,6 +8,39 @@ import ChessBoard from '../components/ChessBoard';
 import ResultOverlay from '../components/ResultOverlay';
 import DrawBanner from '../components/DrawBanner';
 
+// BUG-5 FIX: render quân bị ăn dạng SVG mini thay vì text
+function CapturedPieces({ pieces, theme }) {
+  if (!pieces || pieces.length === 0) return null;
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px', minHeight: '22px', alignItems: 'center' }}>
+      {pieces.map((p, i) => (
+        <svg key={i} width="22" height="22" viewBox="0 0 22 22">
+          <circle cx="11" cy="11" r="10"
+            fill={theme.pieceBg}
+            stroke={p.color === 'red' ? theme.redText : theme.blackText}
+            strokeWidth="1.5"
+          />
+          <circle cx="11" cy="11" r="8" fill="none"
+            stroke={p.color === 'red' ? theme.redText : theme.blackText}
+            strokeWidth="0.8" opacity="0.5"
+          />
+          {p.isHidden ? (
+            <>
+              <line x1="7" y1="7" x2="15" y2="15" stroke={theme.lines} strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
+              <line x1="15" y1="7" x2="7" y2="15" stroke={theme.lines} strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
+            </>
+          ) : (
+            <text x="11" y="14" textAnchor="middle" fontSize="11" fontWeight="700"
+              fill={p.color === 'red' ? theme.redText : theme.blackText}
+              style={{ fontFamily: '"Noto Serif SC", "STKaiti", serif', userSelect: 'none' }}
+            >{p.name}</text>
+          )}
+        </svg>
+      ))}
+    </div>
+  );
+}
+
 export default function GameBoard({
   gameMode, setScreen, theme, matchId,
   playerId, playerName, playerElo,
@@ -182,7 +215,7 @@ export default function GameBoard({
             </div>
           </div>
           <div style={{ fontSize: '0.8rem', color: theme.redText, minHeight: '18px', marginTop: '4px', fontWeight: 'bold' }}>
-            {capturedPieces.red.map((p, i) => <span key={i} style={{ marginRight: '4px' }}>{p.isHidden ? '?' : p.name}</span>)}
+            <CapturedPieces pieces={capturedPieces.red} theme={theme} />
           </div>
         </div>
 
@@ -199,7 +232,7 @@ export default function GameBoard({
         {/* Ban */}
         <div style={{ display: 'flex', flexDirection: 'column', padding: '8px 12px', backgroundColor: theme.panelBg, borderTop: `1px solid ${theme.lines}`, borderBottomLeftRadius: '8px', borderBottomRightRadius: '8px', boxShadow: currentTurn === 'red' ? '0 4px 10px rgba(76,175,80,0.2)' : 'none', transition: 'all 0.3s' }}>
           <div style={{ fontSize: '0.8rem', color: theme.blackText, minHeight: '18px', marginBottom: '4px', fontWeight: 'bold' }}>
-            {capturedPieces.black.map((p, i) => <span key={i} style={{ marginRight: '4px' }}>{p.isHidden ? '?' : p.name}</span>)}
+            <CapturedPieces pieces={capturedPieces.black} theme={theme} />
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0, flex: 1 }}>

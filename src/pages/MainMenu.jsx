@@ -174,11 +174,11 @@ export default function MainMenu({ setScreen, setGameMode, setMatchId, theme, au
         <PlayerPanel auth={auth} theme={theme} isNightMode={isNightMode} setIsNightMode={setIsNightMode} />
       </div>
 
-      <h1 style={{ fontSize: '3rem', margin: '0 0 5px 0' }}>
+      <h1 style={{ fontSize: '3rem', margin: '0 0 5px 0', textAlign: 'center' }}>
         CỜ ÚP <span style={{ color: theme.redText }}>PRO</span>
       </h1>
-      <p style={{ margin: '0 0 30px 0', opacity: 0.8, fontSize: '1.1rem' }}>
-        Lạc nước hai Xe đành bỏ phí. Gặp thời một Tốt cũng thành công!
+      <p style={{ margin: '0 0 30px 0', opacity: 0.8, fontSize: '1.05rem', textAlign: 'center', lineHeight: '1.7' }}>
+        Lạc nước hai Xe đành bỏ phí.<br/>Gặp thời một Tốt cũng thành công!
       </p>
 
       {/* Action buttons */}

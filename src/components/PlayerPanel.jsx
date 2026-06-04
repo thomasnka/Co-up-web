@@ -7,27 +7,18 @@ import React from 'react';
 export default function PlayerPanel({ auth, theme, isNightMode, setIsNightMode }) {
   const {
     playerName, playerElo, isLoggedIn, isLoading: authLoading,
-    loginWithGoogle, loginWithFacebook, logout, profile,
+    loginWithGoogle, logout, profile,
   } = auth;
 
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: '15px',
-      backgroundColor: theme.panelBg, padding: '8px 20px',
+      display: 'flex', alignItems: 'center', gap: '10px',
+      backgroundColor: theme.panelBg, padding: '8px 16px',
       borderRadius: '20px', border: `1px solid ${theme.lines}`,
       boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+      flexWrap: 'wrap', justifyContent: 'flex-end',
     }}>
-      {/* Night toggle */}
-      <button
-        onClick={() => setIsNightMode(!isNightMode)}
-        style={{ padding: '4px 10px', backgroundColor: theme.buttonBg, color: theme.buttonText, border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold' }}
-      >
-        {isNightMode ? '☀️ Sáng' : '🌙 Tối'}
-      </button>
-
-      <div style={{ width: '1px', height: '20px', backgroundColor: theme.lines, margin: '0 5px' }} />
-
-      {/* Player info */}
+      {/* Player info — hiển thị trước */}
       {authLoading ? (
         <span style={{ fontSize: '0.85rem', opacity: 0.6 }}>Đang tải...</span>
 
@@ -70,27 +61,36 @@ export default function PlayerPanel({ auth, theme, isNightMode, setIsNightMode }
         </div>
 
       ) : (
-        /* Chưa đăng nhập */
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px' }}>
-          <span style={{ fontWeight: 'bold', fontSize: '0.9rem', opacity: 0.7, color: theme.textColor }}>
+        /* Chưa đăng nhập — layout: [tên guest] [text kích thích] [nút GG] | [toggle] */
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <span style={{ fontSize: '0.85rem', opacity: 0.6, color: theme.textColor }}>
             {playerName}
           </span>
-          <div style={{ display: 'flex', gap: '6px' }}>
-            <button
-              onClick={loginWithGoogle}
-              style={{ padding: '4px 12px', fontSize: '0.8rem', backgroundColor: '#db4437', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
-            >
-              GG
-            </button>
-            <button
-              onClick={loginWithFacebook}
-              style={{ padding: '4px 12px', fontSize: '0.8rem', backgroundColor: '#1877F2', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
-            >
-              FB
-            </button>
-          </div>
+          <span style={{ fontSize: '0.8rem', color: theme.redText, fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+            · Đăng nhập để lưu ELO
+          </span>
+          <button
+            onClick={loginWithGoogle}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '5px',
+              padding: '5px 12px', fontSize: '0.82rem',
+              backgroundColor: '#db4437', color: '#fff',
+              border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <span>G</span> Đăng nhập
+          </button>
         </div>
       )}
+      {/* Night toggle — luôn ở cuối bên phải */}
+      <div style={{ width: '1px', height: '20px', backgroundColor: theme.lines, flexShrink: 0 }} />
+      <button
+        onClick={() => setIsNightMode(!isNightMode)}
+        style={{ flexShrink: 0, padding: '4px 10px', backgroundColor: theme.buttonBg, color: theme.buttonText, border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}
+      >
+        {isNightMode ? '☀️' : '🌙'}
+      </button>
     </div>
   );
 }

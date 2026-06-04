@@ -305,32 +305,33 @@ export default function GameBoard({
 
       {/* Cot 2: Dieu khien + Bien ban */}
       <div style={{ width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
-            {/* Night mode toggle */}
-            <button onClick={() => setIsNightMode(!isNightMode)} title={isNightMode ? 'Chế độ sáng' : 'Chế độ tối'} style={{ flex: '0 0 42px', padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
-              {isNightMode ? '☀️' : '🌙'}
-            </button>
-            {/* Toggle lộ/úp quân đã ăn còn úp */}
-            <button onClick={() => setRevealCaptured(v => !v)} title={revealCaptured ? 'Úp lại quân đã ăn' : 'Lật quân đã ăn'} style={{ flex: '0 0 42px', padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: revealCaptured ? (isNightMode ? '#444' : '#e8f5e9') : theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
-              {revealCaptured ? '👁' : '🫣'}
-            </button>
-            <button onClick={handleExitGame} style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem' }}>
-              ⬅ Thoát
-            </button>
-            {!isSpectator && (
-              <>
-                {/* Hòa: online cần xác nhận 2 bên, offline confirm 1 bên */}
-                <button onClick={handleDraw} disabled={gameStatus !== 'playing'} style={{ flex: 1, padding: '10px 0', border: 'none', borderRadius: '6px', backgroundColor: gameStatus !== 'playing' ? '#aaa' : '#757575', color: '#fff', fontWeight: 'bold', cursor: gameStatus !== 'playing' ? 'not-allowed' : 'pointer', fontSize: '0.9rem' }}>
-                  🤝 Hòa
-                </button>
-                {/* Thua */}
-                <button onClick={() => handleResign(currentTurn)} disabled={gameStatus !== 'playing'} style={{ flex: 1, padding: '10px 0', border: 'none', borderRadius: '6px', backgroundColor: gameStatus !== 'playing' ? '#aaa' : '#d32f2f', color: '#fff', fontWeight: 'bold', cursor: gameStatus !== 'playing' ? 'not-allowed' : 'pointer', fontSize: '0.9rem' }}>
-                  🏳️ Thua
-                </button>
-              </>
-            )}
-          </div>
+        {/* Control bar — thứ tự: Thoát | Cầu hòa | Nhận thua | Xem/Ẩn cờ | Tối/Sáng */}
+        {/* Fit bề ngang bàn cờ (max 520px), không wrap */}
+        <div style={{ display: 'flex', gap: '6px', width: '100%' }}>
+          <button onClick={handleExitGame}
+            style={{ flex: 2, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+            ⬅ Thoát
+          </button>
+          {!isSpectator && (
+            <>
+              <button onClick={handleDraw} disabled={gameStatus !== 'playing'}
+                style={{ flex: 2, padding: '10px 0', border: 'none', borderRadius: '6px', backgroundColor: gameStatus !== 'playing' ? (isNightMode ? '#444' : '#bbb') : '#757575', color: '#fff', fontWeight: 'bold', cursor: gameStatus !== 'playing' ? 'not-allowed' : 'pointer', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                🤝 Cầu hòa
+              </button>
+              <button onClick={() => handleResign(currentTurn)} disabled={gameStatus !== 'playing'}
+                style={{ flex: 2, padding: '10px 0', border: 'none', borderRadius: '6px', backgroundColor: gameStatus !== 'playing' ? (isNightMode ? '#444' : '#bbb') : '#d32f2f', color: '#fff', fontWeight: 'bold', cursor: gameStatus !== 'playing' ? 'not-allowed' : 'pointer', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                🏳️ Nhận thua
+              </button>
+            </>
+          )}
+          <button onClick={() => setRevealCaptured(v => !v)} title={revealCaptured ? 'Úp lại quân đã ăn' : 'Lật quân đã ăn'}
+            style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: revealCaptured ? (isNightMode ? '#444' : '#e8f5e9') : theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
+            {revealCaptured ? '👁' : '🫣'}
+          </button>
+          <button onClick={() => setIsNightMode(!isNightMode)} title={isNightMode ? 'Chế độ sáng' : 'Chế độ tối'}
+            style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
+            {isNightMode ? '☀️' : '🌙'}
+          </button>
         </div>
 
         <div style={{ flex: 1, minHeight: '260px', maxHeight: '450px', backgroundColor: theme.panelBg, borderRadius: '8px', border: `1px solid ${theme.lines}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>

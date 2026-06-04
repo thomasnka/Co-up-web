@@ -15,6 +15,23 @@ import {
   checkGameStatus,
 } from '../core/chessLogic';
 
+// Map type → tên Việt
+const PIECE_NAME_VI = {
+  general:  'Tướng',
+  advisor:  'Sĩ',
+  elephant: 'Tượng',
+  horse:    'Mã',
+  chariot:  'Xe',
+  cannon:   'Pháo',
+  pawn:     'Tốt',
+};
+
+// Lấy tên Việt của quân — dùng type thực (sau lật) hoặc startingRole (khi úp)
+const getPieceNameVI = (piece) => {
+  const role = piece.isHidden ? piece.startingRole : piece.type;
+  return PIECE_NAME_VI[role] ?? '?';
+};
+
 // P1: tính valid moves cho 1 quân — dùng ngoài render cycle
 const computeValidMoves = (piece, pieces, historyStates) => {
   if (!piece) return [];
@@ -241,10 +258,17 @@ export function useGameState({
       const actualPieceName = nextPieces.find(p => p.id === selectedPiece.id)?.name || '?';
       const moveColor       = currentTurn === 'red' ? 'Đỏ' : 'Đen';
 
+      // Tên Việt của quân di chuyển
+      const pieceVI = getPieceNameVI(selectedPiece);
+      // Format: "Đỏ mở Pháo 炮 (炮 3 tiến 1)" hoặc "Đỏ Xe 俥 5 bình 3"
       let logEntry = isReveal
-        ? `${moveColor} lật ${actualPieceName} (${notationData.move})`
-        : `${moveColor} ${notationData.move}`;
-      if (isCapture) logEntry += ` ăn ${clickedPiece.isHidden ? 'Úp' : clickedPiece.name}`;
+        ? `${moveColor} mở ${pieceVI} ${actualPieceName} (${notationData.move})`
+        : `${moveColor} ${pieceVI} ${notationData.move}`;
+      if (isCapture) {
+        const capturedVI = clickedPiece.isHidden ? 'Úp' : (PIECE_NAME_VI[clickedPiece.type] ?? clickedPiece.name);
+        const capturedChar = clickedPiece.isHidden ? '' : ` ${clickedPiece.name}`;
+        logEntry += ` ăn ${capturedVI}${capturedChar}`;
+      }
 
       // Check detection
       let checkStatus = false;

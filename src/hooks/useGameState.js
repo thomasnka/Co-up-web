@@ -71,6 +71,7 @@ export function useGameState({
   const [movedPieceId, setMovedPieceId]     = useState(null); // F4/F5: animation
 
   const timerRef = useRef(null);
+  const currentTurnRef = useRef('red'); // tránh stale closure trong timer tick
   // P1: ref cho DOM timer display — update trực tiếp, không trigger re-render
   const timerDisplayRefsRef = useRef(new Map()); // color → DOM element ref
 
@@ -78,6 +79,7 @@ export function useGameState({
   const initGame = useCallback(() => {
     setPieces(generatePieces(gameMode));
     setCurrentTurn('red');
+    currentTurnRef.current = 'red';
     setHistoryLog([]);
     setCapturedPieces({ red: [], black: [] });
     setLastMove(null);
@@ -85,6 +87,8 @@ export function useGameState({
     setKingInCheckId(null);
     setTimeLeft(60);
     setGameStatus('playing');
+    timeLeftRef.current = 60;
+    timerEndAtRef.current = null;
     setIsDemoMode(false);
     setHistoryStates([]);
     setHalfMoveClock(0);
@@ -136,9 +140,10 @@ export function useGameState({
           el.textContent = '00:00';
           el.style.backgroundColor = '#d32f2f';
           el.style.color = '#fff';
+          el.style.border = '2px solid #b71c1c';
         }
         // Xử lý timeout ngay
-        setGameStatus(prev => prev === 'playing' ? `timeout_${currentTurn}` : prev);
+        setGameStatus(prev => prev === 'playing' ? `timeout_${currentTurnRef.current}` : prev);
         return;
       }
 
@@ -153,13 +158,16 @@ export function useGameState({
       const el = timerDisplayRefsRef.current?.get(currentTurn);
       if (el) {
         el.textContent = text;
-        // Alert strict < 10s (xqchess: alertFromMs)
+        // Alert strict < 10s
         if (remainMs < 10_000) {
           el.style.backgroundColor = '#d32f2f';
           el.style.color = '#fff';
+          el.style.border = '2px solid #b71c1c';
         } else {
-          el.style.backgroundColor = '';
-          el.style.color = '';
+          // Dùng dataset colors từ GameBoard để đúng theme/nightmode
+          el.style.backgroundColor = el.dataset.activeBg || '#4CAF50';
+          el.style.color = el.dataset.activeColor || '#fff';
+          el.style.border = `2px solid #2e7d32`;
         }
       }
     };
@@ -270,6 +278,7 @@ export function useGameState({
       setValidMoves([]);        // F3: clear valid moves sau khi đi
       setMovedPieceId(selectedPiece.id); // F4/F5: trigger animation
       setCurrentTurn(nextTurnColor);
+      currentTurnRef.current = nextTurnColor;
       // Reset timer sau mỗi nước đi
       timeLeftRef.current = 60;
       timerEndAtRef.current = null; // clear để useEffect timer tạo mới với endAt đúng

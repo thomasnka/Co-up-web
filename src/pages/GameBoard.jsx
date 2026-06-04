@@ -16,7 +16,7 @@ export default function GameBoard({
   const gameRef = useRef(null);
   const [showDrawBanner, setShowDrawBanner] = useState(false);
   const [localDemoMode, setLocalDemoMode] = useState(false);
-  const [showCaptured, setShowCaptured] = useState(true); // option hiện/ẩn quân đã ăn
+  const [revealCaptured, setRevealCaptured] = useState(false); // false=úp, true=lộ tên quân đã ăn
 
   const handleRemoteMove = useCallback((remoteState) => {
     gameRef.current?.applyRemoteState(remoteState);
@@ -165,6 +165,10 @@ export default function GameBoard({
               <span style={{ fontWeight: 'bold', color: theme.blackText, fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {oppDisplayName}
                 {oppElo && <span style={{ fontSize: '0.8rem', opacity: 0.7 }}> ({oppElo})</span>}
+                {/* Hiển thị màu sau tên */}
+                {myColor && <span style={{ marginLeft: '6px', fontSize: '0.75rem', fontWeight: 'bold', color: effectiveMyColor === 'red' ? theme.blackText : theme.redText }}>
+                  [{effectiveMyColor === 'red' ? 'Đen' : 'Đỏ'}]
+                </span>}
               </span>
               {/* FIX mobile: nut Demo gon lai */}
               {isWaitingForOpponent && !isDemoMode && (
@@ -176,33 +180,44 @@ export default function GameBoard({
               {isSyncing   && <span style={{ flexShrink: 0, fontSize: '0.7rem', opacity: 0.6 }}>⏳</span>}
             </div>
             <div
-              ref={el => registerTimerDisplay?.('black', el)}
+              ref={el => {
+                registerTimerDisplay?.('black', el);
+                // Lưu màu inactive vào dataset để DOM update dùng đúng màu
+                if (el) {
+                  el.dataset.activeBg = '#4CAF50';
+                  el.dataset.inactiveBg = isNightMode ? '#333' : '#ddd';
+                  el.dataset.activeColor = '#fff';
+                  el.dataset.inactiveColor = isNightMode ? '#aaa' : '#555';
+                }
+              }}
               style={{
                 flexShrink: 0,
                 backgroundColor: currentTurn === 'black' ? '#4CAF50' : (isNightMode ? '#333' : '#ddd'),
-                color: currentTurn === 'black' ? '#fff' : (isNightMode ? '#aaa' : '#666'),
+                color: currentTurn === 'black' ? '#fff' : (isNightMode ? '#aaa' : '#555'),
                 padding: '4px 12px', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.9rem',
                 minWidth: '58px', textAlign: 'center',
-                transition: 'all 0.3s',
+                transition: 'background-color 0.3s, color 0.3s',
                 border: currentTurn === 'black' ? '2px solid #2e7d32' : '2px solid transparent',
               }}
             >
               {currentTurn === 'black' ? formatTime(timeLeft) : '01:00'}
             </div>
           </div>
-          {showCaptured && (
-            <div style={{ minHeight: '22px', marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '2px' }}>
-              {capturedPieces.red.map((p, i) => (
+          <div style={{ minHeight: '22px', marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '2px' }}>
+            {capturedPieces.red.map((p, i) => {
+              // revealCaptured=true → lộ tên; false → quân úp hiện dấu X
+              const showName = !p.isHidden || revealCaptured;
+              return (
                 <svg key={i} width="20" height="20" viewBox="0 0 20 20">
                   <circle cx="10" cy="10" r="9" fill={theme.pieceBg} stroke={theme.redText} strokeWidth="1.5"/>
-                  {p.isHidden
-                    ? <><line x1="6" y1="6" x2="14" y2="14" stroke={theme.lines} strokeWidth="1.2"/><line x1="14" y1="6" x2="6" y2="14" stroke={theme.lines} strokeWidth="1.2"/></>
-                    : <text x="10" y="13.5" textAnchor="middle" fontSize="10" fontWeight="700" fill={theme.redText} style={{fontFamily:'serif',userSelect:'none'}}>{p.name}</text>
+                  {showName
+                    ? <text x="10" y="13.5" textAnchor="middle" fontSize="10" fontWeight="700" fill={theme.redText} style={{fontFamily:'serif',userSelect:'none'}}>{p.name}</text>
+                    : <><line x1="6" y1="6" x2="14" y2="14" stroke={theme.lines} strokeWidth="1.2" strokeLinecap="round"/><line x1="14" y1="6" x2="6" y2="14" stroke={theme.lines} strokeWidth="1.2" strokeLinecap="round"/></>
                   }
                 </svg>
-              ))}
-            </div>
-          )}
+              );
+            })}
+          </div>
         </div>
 
         <ChessBoard
@@ -217,36 +232,49 @@ export default function GameBoard({
 
         {/* Ban */}
         <div style={{ display: 'flex', flexDirection: 'column', padding: '8px 12px', backgroundColor: theme.panelBg, borderTop: `1px solid ${theme.lines}`, borderBottomLeftRadius: '8px', borderBottomRightRadius: '8px', boxShadow: currentTurn === 'red' ? '0 4px 10px rgba(76,175,80,0.2)' : 'none', transition: 'all 0.3s' }}>
-          {showCaptured && (
-            <div style={{ minHeight: '22px', marginBottom: '4px', display: 'flex', flexWrap: 'wrap', gap: '2px' }}>
-              {capturedPieces.black.map((p, i) => (
+          <div style={{ minHeight: '22px', marginBottom: '4px', display: 'flex', flexWrap: 'wrap', gap: '2px' }}>
+            {capturedPieces.black.map((p, i) => {
+              const showName = !p.isHidden || revealCaptured;
+              return (
                 <svg key={i} width="20" height="20" viewBox="0 0 20 20">
                   <circle cx="10" cy="10" r="9" fill={theme.pieceBg} stroke={theme.blackText} strokeWidth="1.5"/>
-                  {p.isHidden
-                    ? <><line x1="6" y1="6" x2="14" y2="14" stroke={theme.lines} strokeWidth="1.2"/><line x1="14" y1="6" x2="6" y2="14" stroke={theme.lines} strokeWidth="1.2"/></>
-                    : <text x="10" y="13.5" textAnchor="middle" fontSize="10" fontWeight="700" fill={theme.blackText} style={{fontFamily:'serif',userSelect:'none'}}>{p.name}</text>
+                  {showName
+                    ? <text x="10" y="13.5" textAnchor="middle" fontSize="10" fontWeight="700" fill={theme.blackText} style={{fontFamily:'serif',userSelect:'none'}}>{p.name}</text>
+                    : <><line x1="6" y1="6" x2="14" y2="14" stroke={theme.lines} strokeWidth="1.2" strokeLinecap="round"/><line x1="14" y1="6" x2="6" y2="14" stroke={theme.lines} strokeWidth="1.2" strokeLinecap="round"/></>
                   }
                 </svg>
-              ))}
-            </div>
-          )}
+              );
+            })}
+          </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0, flex: 1 }}>
               <div style={{ width: '12px', height: '12px', flexShrink: 0, borderRadius: '50%', backgroundColor: currentTurn === 'red' ? '#4CAF50' : '#888', border: `2px solid ${theme.lines}` }} />
               <span style={{ fontWeight: 'bold', color: theme.redText, fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {myDisplayName}
                 <span style={{ fontSize: '0.8rem', opacity: 0.7 }}> ({playerElo})</span>
+                {/* Hiển thị màu sau tên */}
+                {myColor && <span style={{ marginLeft: '6px', fontSize: '0.75rem', fontWeight: 'bold', color: effectiveMyColor === 'red' ? theme.redText : theme.blackText }}>
+                  [{effectiveMyColor === 'red' ? 'Đỏ' : 'Đen'}]
+                </span>}
               </span>
             </div>
             <div
-              ref={el => registerTimerDisplay?.('red', el)}
+              ref={el => {
+                registerTimerDisplay?.('red', el);
+                if (el) {
+                  el.dataset.activeBg = '#4CAF50';
+                  el.dataset.inactiveBg = isNightMode ? '#333' : '#ddd';
+                  el.dataset.activeColor = '#fff';
+                  el.dataset.inactiveColor = isNightMode ? '#aaa' : '#555';
+                }
+              }}
               style={{
                 flexShrink: 0,
                 backgroundColor: currentTurn === 'red' ? '#4CAF50' : (isNightMode ? '#333' : '#ddd'),
-                color: currentTurn === 'red' ? '#fff' : (isNightMode ? '#aaa' : '#666'),
+                color: currentTurn === 'red' ? '#fff' : (isNightMode ? '#aaa' : '#555'),
                 padding: '4px 12px', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.9rem',
                 minWidth: '58px', textAlign: 'center',
-                transition: 'all 0.3s',
+                transition: 'background-color 0.3s, color 0.3s',
                 border: currentTurn === 'red' ? '2px solid #2e7d32' : '2px solid transparent',
               }}
             >
@@ -264,9 +292,9 @@ export default function GameBoard({
             <button onClick={() => setIsNightMode(!isNightMode)} title={isNightMode ? 'Chế độ sáng' : 'Chế độ tối'} style={{ flex: '0 0 42px', padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
               {isNightMode ? '☀️' : '🌙'}
             </button>
-            {/* Toggle hiện quân đã ăn */}
-            <button onClick={() => setShowCaptured(v => !v)} title={showCaptured ? 'Ẩn quân đã ăn' : 'Hiện quân đã ăn'} style={{ flex: '0 0 42px', padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: showCaptured ? theme.panelBg : (isNightMode ? '#444' : '#eee'), color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
-              {showCaptured ? '⚔️' : '🫥'}
+            {/* Toggle lộ/úp quân đã ăn còn úp */}
+            <button onClick={() => setRevealCaptured(v => !v)} title={revealCaptured ? 'Úp lại quân đã ăn' : 'Lật quân đã ăn'} style={{ flex: '0 0 42px', padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: revealCaptured ? (isNightMode ? '#444' : '#e8f5e9') : theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
+              {revealCaptured ? '👁' : '🫣'}
             </button>
             <button onClick={handleExitGame} style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem' }}>
               ⬅ Thoát

@@ -169,8 +169,8 @@ export default function ChessBoard({
           const label = gameMode === 'innovative' ? 'Cờ Úp Pro · Nâng Cao' : 'Cờ Úp Pro · Tiêu Chuẩn';
           return (
             <text x="450" y="505" textAnchor="middle" dominantBaseline="middle"
-              fontSize="18" fontWeight="500" letterSpacing="2"
-              fill={isDay ? 'rgba(100,70,20,0.20)' : 'rgba(200,160,80,0.16)'}
+              fontSize="24" fontWeight="600" letterSpacing="3"
+              fill={isDay ? 'rgba(100,70,20,0.38)' : 'rgba(220,180,90,0.35)'}
               style={{ fontFamily: '"Noto Serif SC", sans-serif', userSelect: 'none' }}
             >{label}</text>
           );

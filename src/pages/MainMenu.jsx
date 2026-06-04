@@ -120,6 +120,13 @@ export default function MainMenu({ setScreen, setGameMode, setMatchId, theme, au
     finally { setIsLoading(false); }
   };
 
+  // C4: Spectator — không update DB, chỉ set matchId + mode rồi vào GameBoard với role spectator
+  const handleSpectate = (game) => {
+    setGameMode(game.mode);
+    setMatchId(game.id);
+    setScreen("playing");
+  };
+
   const handleQuickMatch = async () => {
     setIsLoading(true);
     const available = waitingRooms.filter(r => r.host_id !== playerId);
@@ -182,7 +189,7 @@ export default function MainMenu({ setScreen, setGameMode, setMatchId, theme, au
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '25px', width: '100%', maxWidth: '1200px', flex: 1 }}>
         <LobbyList
           waitingRooms={waitingRooms} liveGames={liveGames} isLoading={isLoading}
-          playerId={playerId} theme={theme} onJoinRoom={handleJoinRoom}
+          playerId={playerId} theme={theme} onJoinRoom={handleJoinRoom} onSpectate={handleSpectate}
         />
         <Leaderboard leaderboard={leaderboard} auth={auth} theme={theme} isNightMode={isNightMode} />
       </div>

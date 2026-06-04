@@ -194,7 +194,8 @@ export function useGameState({
       let nextPieces = pieces.filter(p => !(isCapture && p.id === clickedPiece.id));
       nextPieces = nextPieces.map(p =>
         p.id === selectedPiece.id
-          ? { ...p, row: targetRow, col: targetCol, isHidden: false }
+          // C2: set opened=true sau mỗi lần di chuyển → advisor/elephant thoát ràng buộc palace/river
+          ? { ...p, row: targetRow, col: targetCol, isHidden: false, opened: true }
           : p
       );
 

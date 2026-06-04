@@ -1,4 +1,5 @@
 // src/components/LobbyList.jsx
+// C4 FIX — B-SPECTATOR: onSpectate prop + wire nút "Xem" cho live games
 
 import React from 'react';
 
@@ -6,6 +7,7 @@ export default function LobbyList({
   waitingRooms, liveGames, isLoading,
   playerId, theme,
   onJoinRoom,
+  onSpectate,  // C4: (game) => void — vào phòng dưới dạng spectator
 }) {
   const cardStyle = {
     backgroundColor: theme.panelBg, borderRadius: '8px', padding: '12px 15px', marginBottom: '10px',
@@ -73,10 +75,27 @@ export default function LobbyList({
                 </div>
                 <div style={{ fontSize: '0.8rem', opacity: 0.7, color: theme.textColor }}>
                   {game.mode === 'standard' ? 'Tiêu Chuẩn' : 'Cải Tiến'}
+                  {/* C4: badge số người xem nếu có */}
+                  {game.spectator_count > 0 && (
+                    <span style={{ marginLeft: '8px', opacity: 0.6 }}>👁 {game.spectator_count}</span>
+                  )}
                 </div>
               </div>
-              <button style={{ padding: '6px 12px', backgroundColor: 'transparent', color: theme.textColor, border: `1px solid ${theme.lines}`, borderRadius: '4px', cursor: 'pointer' }}>
-                Xem
+              {/* C4: nút Xem functional — gọi onSpectate */}
+              <button
+                onClick={() => onSpectate?.(game)}
+                style={{
+                  padding: '6px 12px',
+                  backgroundColor: 'transparent',
+                  color: theme.textColor,
+                  border: `1px solid ${theme.lines}`,
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '0.85rem',
+                }}
+              >
+                👁 Xem
               </button>
             </div>
           ))

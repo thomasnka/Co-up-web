@@ -101,16 +101,25 @@ export function useMultiplayer({
         setMatchData(prev => {
           if (!prev) return prev;
           const updated = { ...prev };
-          // Nếu status chuyển sang playing → update local
           if (msg.status === 'playing' && prev.status === 'waiting') {
             updated.status = 'playing';
           }
           return updated;
         });
+        // C4 + F1: server trả gameState khi spectator join hoặc reconnect
+        if (msg.gameState) {
+          onRemoteMoveRef.current?.(msg.gameState);
+        }
         break;
       }
 
-
+      case 'state_recovery': {
+        // F1: server gửi state recovery sau reconnect request
+        if (msg.gameState) {
+          onRemoteMoveRef.current?.(msg.gameState);
+        }
+        break;
+      }
 
       case 'move': {
         // Nước đi từ đối thủ
@@ -228,7 +237,14 @@ export function useMultiplayer({
     return null;
   })();
 
-  const isSpectator = matchData !== null && myColor === null && !!matchData.guest_id;
+  // C4: isSpectator = player join phòng không phải host/guest
+  // Điều kiện: matchData tồn tại, không có màu (myColor=null), và match đang playing
+  // Guard: khi match=waiting và guest chưa join, myColor cũng null nhưng KHÔNG phải spectator
+  const isSpectator = matchData !== null
+    && myColor === null
+    && matchData.status === 'playing'
+    && matchData.host_id !== playerId
+    && matchData.guest_id !== playerId;
   const isWaiting   = !!(matchId && matchData?.status === 'waiting');
 
   const getIsMyTurn = useCallback((currentTurn) => {

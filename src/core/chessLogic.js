@@ -1,6 +1,13 @@
 // =============================================================================
 // FILE: src/core/chessLogic.js
-// FIXES: B1, L1-3, L1-5, B2, B3
+// FIXES HISTORY: B1, L1-3, L1-5, B2, B3
+// SESSION FIXES:
+//   C1 — B-HIDDEN-CAN-CHECK: quân úp KHÔNG được chiếu tướng (xqchess: hidden_can_check=false)
+//   C2 — B-ADVISOR-ELEPHANT-OPENED: advisor/elephant đã lật KHÔNG bị giới hạn cung/sông
+//        Logic: khi lật ra (isHidden=false), quân chơi theo luật cờ tướng chuẩn
+//               NHƯNG trong cờ úp, khi quân được "mở" (opened=true sau lần đi đầu),
+//               advisor và elephant thoát khỏi ràng buộc palace/river.
+//               Ref: xqchess source — piece.opened flag
 // =============================================================================
 
 const HALF_ROLES = [
@@ -26,7 +33,6 @@ const INITIAL_POSITIONS = [
   ...[0, 2, 4, 6, 8].map(col => ({ row: 6, col })),
 ];
 
-// L1-5: log warning khi vị trí không map được role
 const getStartingRole = (row, col) => {
   if (row === 0 || row === 9) {
     if (col === 0 || col === 8) return 'chariot';
@@ -36,9 +42,7 @@ const getStartingRole = (row, col) => {
   }
   if ((row === 2 || row === 7) && (col === 1 || col === 7)) return 'cannon';
   if ((row === 3 || row === 6) && [0, 2, 4, 6, 8].includes(col)) return 'pawn';
-
-  // L1-5: vị trí không trong layout chuẩn — chỉ xảy ra nếu INITIAL_POSITIONS sai
-  console.warn(`[chessLogic] getStartingRole: unexpected position (${row}, ${col}) — returning null`);
+  console.warn(`[chessLogic] getStartingRole: unexpected position (${row}, ${col})`);
   return null;
 };
 
@@ -78,14 +82,22 @@ export const generatePieces = (mode = 'standard') => {
       row:          pos.row,
       col:          pos.col,
       isHidden:     true,
+      // C2: opened=false khi mới sinh — set true sau lần đi đầu tiên (trong useGameState)
+      opened:       false,
       isGeneral:    false,
       startingRole: getStartingRole(pos.row, pos.col),
     });
   });
 
-  // Generals luôn lật ngửa, không úp
-  finalPieces.push({ id: idCounter++, type: 'general', name: '將', color: 'black', row: 0, col: 4, isHidden: false, isGeneral: true, startingRole: 'general' });
-  finalPieces.push({ id: idCounter++, type: 'general', name: '帥', color: 'red',   row: 9, col: 4, isHidden: false, isGeneral: true, startingRole: 'general' });
+  // Generals luôn lật ngửa, không úp; opened=true vì không có ràng buộc special
+  finalPieces.push({
+    id: idCounter++, type: 'general', name: '將', color: 'black',
+    row: 0, col: 4, isHidden: false, opened: true, isGeneral: true, startingRole: 'general',
+  });
+  finalPieces.push({
+    id: idCounter++, type: 'general', name: '帥', color: 'red',
+    row: 9, col: 4, isHidden: false, opened: true, isGeneral: true, startingRole: 'general',
+  });
 
   return finalPieces;
 };
@@ -109,12 +121,21 @@ const countPiecesBetween = (pieces, startRow, startCol, endRow, endCol) => {
   return count;
 };
 
-// checkBasicRules — dùng cho cả quân lật ngửa lẫn quân úp (via startingRole)
+// =============================================================================
+// checkBasicRules
+//
+// C2 KEY LOGIC:
+//   - piece.isHidden=true  → dùng startingRole, bị giới hạn palace/river (chưa lật)
+//   - piece.isHidden=false, piece.opened=false → vừa lật ra lần đầu, VẪN bị giới hạn
+//     (nước đi đầu tiên sau khi lật là nước lật chính nó, opened sẽ = true SAU đó)
+//   - piece.isHidden=false, piece.opened=true  → đã từng di chuyển, KHÔNG bị giới hạn
+//
+// Tóm lại: advisor/elephant chỉ bị giới hạn khi !piece.opened
+// =============================================================================
 const checkBasicRules = (piece, targetRow, targetCol, allPieces) => {
   const targetPiece = getPieceAt(allPieces, targetRow, targetCol);
   if (targetPiece && getEffectiveColor(targetPiece) === getEffectiveColor(piece)) return false;
 
-  // L1-3: guard — nếu role null/undefined (startingRole mất khi deserialize) → block nước đi
   const role = piece.isHidden ? piece.startingRole : piece.type;
   if (!role) {
     console.warn(`[chessLogic] checkBasicRules: piece id=${piece.id} has null role — move blocked`);
@@ -125,8 +146,13 @@ const checkBasicRules = (piece, targetRow, targetCol, allPieces) => {
   const startRow = piece.row, startCol = piece.col;
   const dx = Math.abs(targetCol - startCol), dy = Math.abs(targetRow - startRow);
 
+  // C2: opened flag — true khi quân đã từng di chuyển sau khi lật
+  // Advisor và Elephant opened=true → thoát khỏi ràng buộc palace/river
+  const isOpened = piece.opened === true;
+
   switch (role) {
     case 'general':
+      // General luôn bị giới hạn trong cung (không có opened exception)
       if (dx + dy !== 1) return false;
       if (targetCol < 3 || targetCol > 5) return false;
       if (movingColor === 'red'   && targetRow < 7) return false;
@@ -134,18 +160,23 @@ const checkBasicRules = (piece, targetRow, targetCol, allPieces) => {
       return true;
 
     case 'advisor':
-      // L1-1: advisor phải ở trong cung (3–5 cột, 0–2 hoặc 7–9 hàng)
       if (dx !== 1 || dy !== 1) return false;
-      if (targetCol < 3 || targetCol > 5) return false;
-      if (movingColor === 'red'   && targetRow < 7) return false;
-      if (movingColor === 'black' && targetRow > 2) return false;
+      // C2: nếu opened → không bị giới hạn palace
+      if (!isOpened) {
+        if (targetCol < 3 || targetCol > 5) return false;
+        if (movingColor === 'red'   && targetRow < 7) return false;
+        if (movingColor === 'black' && targetRow > 2) return false;
+      }
       return true;
 
     case 'elephant':
-      // L1-2: tượng không qua sông
       if (dx !== 2 || dy !== 2) return false;
-      if (movingColor === 'red'   && targetRow < 5) return false;
-      if (movingColor === 'black' && targetRow > 4) return false;
+      // C2: nếu opened → không bị giới hạn sông
+      if (!isOpened) {
+        if (movingColor === 'red'   && targetRow < 5) return false;
+        if (movingColor === 'black' && targetRow > 4) return false;
+      }
+      // Bị chặn voi (象眼) vẫn áp dụng dù opened hay không
       if (getPieceAt(allPieces, (startRow + targetRow) / 2, (startCol + targetCol) / 2)) return false;
       return true;
 
@@ -168,7 +199,7 @@ const checkBasicRules = (piece, targetRow, targetCol, allPieces) => {
     }
 
     case 'pawn': {
-      const forward     = movingColor === 'red' ? -1 : 1;
+      const forward      = movingColor === 'red' ? -1 : 1;
       const crossedRiver = movingColor === 'red' ? startRow < 5 : startRow > 4;
       if (targetRow === startRow + forward && targetCol === startCol) return true;
       if (crossedRiver && targetRow === startRow && dx === 1) return true;
@@ -188,12 +219,21 @@ const isGeneralsFacing = (pieces) => {
   return countPiecesBetween(pieces, blackGen.row, blackGen.col, redGen.row, redGen.col) === 0;
 };
 
-// B1 FIX: bỏ điều kiện !p.isHidden — quân úp ĐƯỢC phép chiếu tướng (dùng startingRole)
+// =============================================================================
+// isKingInCheck
+//
+// C1 FIX — B-HIDDEN-CAN-CHECK:
+//   Revert B1 — quân úp KHÔNG được chiếu tướng.
+//   Lý do: xqchess source confirm hidden_can_check: false
+//   Quân úp chưa biết danh tính → không thể "chiếu" một cách hợp lệ.
+//   Chỉ quân đã lật ngửa (!p.isHidden) mới có thể chiếu tướng.
+// =============================================================================
 export const isKingInCheck = (pieces, kingColor) => {
   const king = pieces.find(p => p.type === 'general' && p.color === kingColor);
   if (!king) return false;
   for (const p of pieces) {
-    if (getEffectiveColor(p) === kingColor) continue;  // bỏ qua quân cùng phe
+    if (getEffectiveColor(p) === kingColor) continue; // bỏ qua quân cùng phe
+    if (p.isHidden) continue;                          // C1: quân úp không chiếu được
     if (checkBasicRules(p, king.row, king.col, pieces)) return true;
   }
   return false;
@@ -201,16 +241,22 @@ export const isKingInCheck = (pieces, kingColor) => {
 
 export const getBoardHash = (pieces, turnColor) => {
   const sorted = [...pieces].sort((a, b) => a.id - b.id);
-  return turnColor + '|' + sorted.map(p => `${p.id}:${p.row}${p.col}${p.isHidden ? 'H' : 'S'}`).join('');
+  // C2: hash bao gồm opened flag để threefold repetition detect đúng
+  return turnColor + '|' + sorted.map(p =>
+    `${p.id}:${p.row}${p.col}${p.isHidden ? 'H' : 'S'}${p.opened ? 'O' : 'C'}`
+  ).join('');
 };
 
 export const isValidMove = (piece, targetRow, targetCol, allPieces, historyStates = []) => {
   if (!checkBasicRules(piece, targetRow, targetCol, allPieces)) return false;
 
   const movingColor = getEffectiveColor(piece);
+
+  // Simulate board sau nước đi
+  // C2: khi quân di chuyển → set opened=true trong simulation
   let sim = allPieces.filter(p => !(p.row === targetRow && p.col === targetCol));
   sim = sim.map(p => p.id === piece.id
-    ? { ...p, row: targetRow, col: targetCol, isHidden: false }
+    ? { ...p, row: targetRow, col: targetCol, isHidden: false, opened: true }
     : p
   );
 
@@ -240,8 +286,7 @@ export const hasValidMoves = (pieces, color, historyStates = []) => {
 export const checkGameStatus = (pieces, turnColor, halfMoveClock, historyStates = []) => {
   if (halfMoveClock >= 100) return 'draw_50';
 
-  // B2 FIX: chỉ tuyên bố draw_material khi TẤT CẢ quân đã lật ngửa
-  // Quân úp chưa lật có thể là xe/pháo — không thể kết luận thiếu quân tấn công
+  // B2: chỉ tuyên bố draw_material khi TẤT CẢ quân đã lật ngửa
   const allRevealed = pieces.every(p => !p.isHidden);
   if (allRevealed) {
     const hasAttacker = pieces.some(p =>
@@ -259,13 +304,11 @@ export const checkGameStatus = (pieces, turnColor, halfMoveClock, historyStates 
   return 'playing';
 };
 
-// B3 FIX: getNotation dùng effectiveRole để tính distance đúng khi quân vừa lật
+// B3: getNotation dùng effectiveRole
 export const getNotation = (piece, targetRow, targetCol, allPieces) => {
   const isRed        = getEffectiveColor(piece) === 'red';
   const startFile    = isRed ? 9 - piece.col : piece.col + 1;
   const targetFile   = isRed ? 9 - targetCol : targetCol + 1;
-
-  // B3: dùng effectiveRole thay vì piece.type
   const effectiveRole = piece.isHidden ? (piece.startingRole ?? piece.type) : piece.type;
 
   let direction;
@@ -282,7 +325,6 @@ export const getNotation = (piece, targetRow, targetCol, allPieces) => {
     distance = targetFile;
   }
 
-  // Prefix Tiền/Hậu cho quân đã lật ngửa
   let prefix = '';
   if (!piece.isHidden && ['chariot', 'cannon', 'horse', 'pawn'].includes(effectiveRole)) {
     const sameFile = allPieces.filter(p =>

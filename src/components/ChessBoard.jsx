@@ -8,7 +8,6 @@ export default function ChessBoard({
   validMoves = [], movedPieceId = null, isFlipped = false,
   onPieceClick, onCellClick,
 }) {
-  // F3: Set cho O(1) lookup khi render valid move dots
   const validMovesSet = useMemo(() =>
     new Set(validMoves.map(m => `${m.row}-${m.col}`)),
     [validMoves]
@@ -35,131 +34,310 @@ export default function ChessBoard({
     onCellClick(row, col);
   }, [onCellClick]);
 
+  const isDay = theme.board === '#e3c697';
+
   return (
     <svg
       viewBox="0 0 900 1000"
       style={{ width: '100%', backgroundColor: theme.board, display: 'block', touchAction: 'none' }}
     >
       <defs>
-        <filter id="piece-shadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="1.5" dy="3" stdDeviation="3" floodOpacity="0.25" />
+        {/* ── FILTERS ───────────────────────────────────────────── */}
+        <filter id="piece-shadow" x="-25%" y="-25%" width="150%" height="150%">
+          <feDropShadow dx="0" dy="2.5" stdDeviation="3.5" floodColor="rgba(0,0,0,0.45)" />
         </filter>
-        <radialGradient id="revealed-grad" cx="35%" cy="35%" r="65%">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="100%" stopColor={theme.pieceBg} />
+        <filter id="piece-shadow-selected" x="-30%" y="-30%" width="160%" height="160%">
+          <feDropShadow dx="0" dy="0" stdDeviation="8" floodColor={theme.selectedGlow} floodOpacity="0.9" />
+        </filter>
+        <filter id="check-glow" x="-40%" y="-40%" width="180%" height="180%">
+          <feDropShadow dx="0" dy="0" stdDeviation="10" floodColor="rgba(220,50,50,0.95)" />
+        </filter>
+
+        {/* ── PIECE GRADIENTS (Day) ──────────────────────────────── */}
+        <radialGradient id="piece-bg-day" cx="38%" cy="32%" r="62%">
+          <stop offset="0%"   stopColor="#fffdf5" />
+          <stop offset="55%"  stopColor="#f5edd8" />
+          <stop offset="100%" stopColor="#ddd0b0" />
         </radialGradient>
-        <radialGradient id="hidden-grad" cx="35%" cy="35%" r="65%">
-          <stop offset="0%" stopColor="#f7f2ea" />
-          <stop offset="100%" stopColor="#d4c8b8" />
+        <radialGradient id="piece-bg-day-selected" cx="38%" cy="32%" r="62%">
+          <stop offset="0%"   stopColor="#fffff0" />
+          <stop offset="55%"  stopColor="#fdf5d8" />
+          <stop offset="100%" stopColor="#e8d89a" />
         </radialGradient>
+        <radialGradient id="piece-hidden-day" cx="38%" cy="32%" r="62%">
+          <stop offset="0%"   stopColor="#f0e8d5" />
+          <stop offset="50%"  stopColor="#d8c89a" />
+          <stop offset="100%" stopColor="#b8a070" />
+        </radialGradient>
+
+        {/* ── PIECE GRADIENTS (Night) ────────────────────────────── */}
+        <radialGradient id="piece-bg-night" cx="38%" cy="32%" r="62%">
+          <stop offset="0%"   stopColor="#3a3530" />
+          <stop offset="55%"  stopColor="#2a2520" />
+          <stop offset="100%" stopColor="#1a1510" />
+        </radialGradient>
+        <radialGradient id="piece-bg-night-selected" cx="38%" cy="32%" r="62%">
+          <stop offset="0%"   stopColor="#4a4035" />
+          <stop offset="55%"  stopColor="#35302a" />
+          <stop offset="100%" stopColor="#252015" />
+        </radialGradient>
+        <radialGradient id="piece-hidden-night" cx="38%" cy="32%" r="62%">
+          <stop offset="0%"   stopColor="#2e2920" />
+          <stop offset="50%"  stopColor="#1e1a14" />
+          <stop offset="100%" stopColor="#120f0a" />
+        </radialGradient>
+
+        {/* ── BOARD TEXTURE OVERLAY ─────────────────────────────── */}
+        <pattern id="wood-grain" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
+          <rect width="200" height="200" fill="none"/>
+          <line x1="0" y1="40" x2="200" y2="50" stroke="rgba(0,0,0,0.018)" strokeWidth="2"/>
+          <line x1="0" y1="80" x2="200" y2="95" stroke="rgba(0,0,0,0.012)" strokeWidth="1.5"/>
+          <line x1="0" y1="130" x2="200" y2="120" stroke="rgba(0,0,0,0.015)" strokeWidth="2"/>
+          <line x1="0" y1="170" x2="200" y2="165" stroke="rgba(0,0,0,0.01)" strokeWidth="1"/>
+        </pattern>
       </defs>
+
+      {/* Board wood grain texture */}
+      <rect x="0" y="0" width="900" height="1000" fill="url(#wood-grain)" />
 
       <g transform={isFlipped ? 'rotate(180, 450, 500)' : undefined}>
 
-      {/* Last move highlight */}
-      {lastMove && (
-        <>
-          <rect x={lastMove.from.col * 100 + 5} y={lastMove.from.row * 100 + 5} width="90" height="90" fill="#ffeb3b" opacity="0.3" rx="8" />
-          <rect x={lastMove.to.col   * 100 + 5} y={lastMove.to.row   * 100 + 5} width="90" height="90" fill="#4CAF50" opacity="0.3" rx="8" />
-        </>
-      )}
+        {/* ── LAST MOVE HIGHLIGHT ────────────────────────────────── */}
+        {lastMove && (
+          <>
+            <rect
+              x={lastMove.from.col * 100 + 8} y={lastMove.from.row * 100 + 8}
+              width="84" height="84" rx="6"
+              fill={isDay ? 'rgba(200,170,60,0.28)' : 'rgba(200,170,60,0.2)'}
+            />
+            <rect
+              x={lastMove.to.col * 100 + 8} y={lastMove.to.row * 100 + 8}
+              width="84" height="84" rx="6"
+              fill={isDay ? 'rgba(80,180,80,0.28)' : 'rgba(80,180,80,0.22)'}
+            />
+          </>
+        )}
 
-      {/* F3: Valid move dots */}
-      {validMoves.map(m => (
-        <circle
-          key={`vm-${m.row}-${m.col}`}
-          cx={m.col * 100 + 50} cy={m.row * 100 + 50} r="14"
-          fill="rgba(52, 152, 219, 0.45)"
-          style={{ pointerEvents: 'none' }}
+        {/* ── BOARD BORDER ──────────────────────────────────────── */}
+        <rect x="40" y="40" width="820" height="920" fill="none"
+          stroke={isDay ? 'rgba(100,70,20,0.7)' : 'rgba(150,120,60,0.5)'}
+          strokeWidth="3" rx="2"
         />
-      ))}
 
-      {/* Board border */}
-      <rect x="40" y="40" width="820" height="920" fill="none" stroke={theme.lines} strokeWidth="4" />
+        {/* ── HORIZONTAL LINES ──────────────────────────────────── */}
+        {[...Array(10)].map((_, i) => (
+          <line key={`h-${i}`}
+            x1="50" y1={i * 100 + 50} x2="850" y2={i * 100 + 50}
+            stroke={isDay ? 'rgba(100,70,20,0.55)' : 'rgba(150,120,60,0.4)'}
+            strokeWidth="1.2"
+          />
+        ))}
 
-      {/* Horizontal lines */}
-      {[...Array(10)].map((_, i) => (
-        <line key={`h-${i}`} x1="50" y1={i * 100 + 50} x2="850" y2={i * 100 + 50} stroke={theme.lines} strokeWidth="2" />
-      ))}
+        {/* ── VERTICAL LINES ────────────────────────────────────── */}
+        {[...Array(9)].map((_, i) => (
+          <React.Fragment key={`v-${i}`}>
+            <line
+              x1={i * 100 + 50} y1="50"
+              x2={i * 100 + 50} y2={i === 0 || i === 8 ? '950' : '450'}
+              stroke={isDay ? 'rgba(100,70,20,0.55)' : 'rgba(150,120,60,0.4)'}
+              strokeWidth="1.2"
+            />
+            {i > 0 && i < 8 && (
+              <line
+                x1={i * 100 + 50} y1="550"
+                x2={i * 100 + 50} y2="950"
+                stroke={isDay ? 'rgba(100,70,20,0.55)' : 'rgba(150,120,60,0.4)'}
+                strokeWidth="1.2"
+              />
+            )}
+          </React.Fragment>
+        ))}
 
-      {/* Vertical lines — bị tách giữa sông */}
-      {[...Array(9)].map((_, i) => (
-        <React.Fragment key={`v-${i}`}>
-          <line x1={i * 100 + 50} y1="50" x2={i * 100 + 50} y2={i === 0 || i === 8 ? '950' : '450'} stroke={theme.lines} strokeWidth="2" />
-          {i > 0 && i < 8 && <line x1={i * 100 + 50} y1="550" x2={i * 100 + 50} y2="950" stroke={theme.lines} strokeWidth="2" />}
-        </React.Fragment>
-      ))}
+        {/* ── PALACE DIAGONALS ──────────────────────────────────── */}
+        {[
+          [350,50,550,250],[550,50,350,250],
+          [350,750,550,950],[550,750,350,950]
+        ].map(([x1,y1,x2,y2],i) => (
+          <line key={`d-${i}`} x1={x1} y1={y1} x2={x2} y2={y2}
+            stroke={isDay ? 'rgba(100,70,20,0.55)' : 'rgba(150,120,60,0.4)'}
+            strokeWidth="1.2"
+          />
+        ))}
 
-      {/* Cung tướng */}
-      <line x1="350" y1="50"  x2="550" y2="250" stroke={theme.lines} strokeWidth="2" />
-      <line x1="550" y1="50"  x2="350" y2="250" stroke={theme.lines} strokeWidth="2" />
-      <line x1="350" y1="750" x2="550" y2="950" stroke={theme.lines} strokeWidth="2" />
-      <line x1="550" y1="750" x2="350" y2="950" stroke={theme.lines} strokeWidth="2" />
+        {/* ── RIVER LABEL ───────────────────────────────────────── */}
+        <text x="270" y="505" textAnchor="middle" dominantBaseline="middle"
+          fontSize="26" fontWeight="400" letterSpacing="6"
+          fill={isDay ? 'rgba(100,70,20,0.22)' : 'rgba(200,160,80,0.18)'}
+          style={{ fontFamily: '"Noto Serif SC", "STKaiti", serif' }}
+        >楚河</text>
+        <text x="630" y="505" textAnchor="middle" dominantBaseline="middle"
+          fontSize="26" fontWeight="400" letterSpacing="6"
+          fill={isDay ? 'rgba(100,70,20,0.22)' : 'rgba(200,160,80,0.18)'}
+          style={{ fontFamily: '"Noto Serif SC", "STKaiti", serif' }}
+        >漢界</text>
 
-      {/* Watermark sông */}
-      <text x="450" y="505" textAnchor="middle" dominantBaseline="middle" fontSize="28" fontWeight="bold" fill={theme.lines} opacity="0.25" letterSpacing="8">
-        CỜ ÚP PRO — {gameMode === 'standard' ? 'TIÊU CHUẨN' : 'CẢI TIẾN'}
-      </text>
+        {/* ── COORDINATE LABELS ─────────────────────────────────── */}
+        {[...Array(9)].map((_, i) => (
+          <React.Fragment key={`coord-${i}`}>
+            <text x={i * 100 + 50} y="28" textAnchor="middle" fontSize="14"
+              fill={isDay ? 'rgba(100,70,20,0.45)' : 'rgba(180,140,60,0.4)'}
+              transform={isFlipped ? `rotate(180, ${i * 100 + 50}, 28)` : undefined}
+            >{isFlipped ? 9 - i : i + 1}</text>
+            <text x={i * 100 + 50} y="980" textAnchor="middle" fontSize="14"
+              fill={isDay ? 'rgba(100,70,20,0.45)' : 'rgba(180,140,60,0.4)'}
+              transform={isFlipped ? `rotate(180, ${i * 100 + 50}, 980)` : undefined}
+            >{isFlipped ? i + 1 : 9 - i}</text>
+          </React.Fragment>
+        ))}
 
-      {/* Tọa độ cột */}
-      {[...Array(9)].map((_, i) => (
-        <React.Fragment key={`coord-${i}`}>
-          <text x={i * 100 + 50} y="32"  textAnchor="middle" fontSize="16" fontWeight="bold" fill={theme.lines} opacity="0.6"
-            transform={isFlipped ? `rotate(180, ${i * 100 + 50}, 32)` : undefined}>{isFlipped ? 9 - i : i + 1}</text>
-          <text x={i * 100 + 50} y="978" textAnchor="middle" fontSize="16" fontWeight="bold" fill={theme.lines} opacity="0.6"
-            transform={isFlipped ? `rotate(180, ${i * 100 + 50}, 978)` : undefined}>{isFlipped ? i + 1 : 9 - i}</text>
-        </React.Fragment>
-      ))}
+        {/* ── CROSSHAIR MARKERS ─────────────────────────────────── */}
+        {crosshairPoints.map((pt, idx) => {
+          const cx = pt.c * 100 + 50, cy = pt.r * 100 + 50, d = 9, l = 18;
+          const s = isDay ? 'rgba(100,70,20,0.45)' : 'rgba(180,140,60,0.35)';
+          return (
+            <g key={`ch-${idx}`} stroke={s} strokeWidth="1.5">
+              {pt.c > 0 && <path d={`M ${cx-d-l} ${cy-d} L ${cx-d} ${cy-d} L ${cx-d} ${cy-d-l} M ${cx-d-l} ${cy+d} L ${cx-d} ${cy+d} L ${cx-d} ${cy+d+l}`} fill="none"/>}
+              {pt.c < 8 && <path d={`M ${cx+d+l} ${cy-d} L ${cx+d} ${cy-d} L ${cx+d} ${cy-d-l} M ${cx+d+l} ${cy+d} L ${cx+d} ${cy+d} L ${cx+d} ${cy+d+l}`} fill="none"/>}
+            </g>
+          );
+        })}
 
-      {/* Hoa thị */}
-      {crosshairPoints.map((pt, idx) => {
-        const cx = pt.c * 100 + 50, cy = pt.r * 100 + 50, d = 8, l = 20;
-        return (
-          <g key={`ch-${idx}`} stroke={theme.lines} strokeWidth="2">
-            {pt.c > 0 && <path d={`M ${cx-d-l} ${cy-d} L ${cx-d} ${cy-d} L ${cx-d} ${cy-d-l} M ${cx-d-l} ${cy+d} L ${cx-d} ${cy+d} L ${cx-d} ${cy+d+l}`} fill="none" />}
-            {pt.c < 8 && <path d={`M ${cx+d+l} ${cy-d} L ${cx+d} ${cy-d} L ${cx+d} ${cy-d-l} M ${cx+d+l} ${cy+d} L ${cx+d} ${cy+d} L ${cx+d} ${cy+d+l}`} fill="none" />}
-          </g>
-        );
-      })}
+        {/* ── VALID MOVE DOTS ───────────────────────────────────── */}
+        {validMoves.map(m => (
+          <circle key={`vm-${m.row}-${m.col}`}
+            cx={m.col * 100 + 50} cy={m.row * 100 + 50} r="13"
+            fill="rgba(146,207,44,0.82)"
+            style={{ pointerEvents: 'none', filter: 'drop-shadow(0 0 4px rgba(80,150,0,0.5))' }}
+          />
+        ))}
 
-      {/* Click zones cho ô trống */}
-      {gridIntersections.map(pt => (
-        <circle
-          key={`grid-${pt.row}-${pt.col}`}
-          cx={pt.col * 100 + 50} cy={pt.row * 100 + 50} r="45"
-          fill="transparent"
-          onPointerDown={(e) => handleCellPointer(e, pt.row, pt.col)}
-          style={{ cursor: selectedPiece ? 'crosshair' : 'default', touchAction: 'none' }}
-        />
-      ))}
+        {/* ── CELL CLICK ZONES ──────────────────────────────────── */}
+        {gridIntersections.map(pt => (
+          <circle key={`grid-${pt.row}-${pt.col}`}
+            cx={pt.col * 100 + 50} cy={pt.row * 100 + 50} r="46"
+            fill="transparent"
+            onPointerDown={(e) => handleCellPointer(e, pt.row, pt.col)}
+            style={{ cursor: selectedPiece ? 'crosshair' : 'default', touchAction: 'none' }}
+          />
+        ))}
 
-      {/* Quân cờ */}
-      {pieces.map(p => {
-        const cx = p.col * 100 + 50, cy = p.row * 100 + 50;
-        const isSelected = selectedPiece?.id === p.id;
-        return (
-          <g
-            key={p.id}
-            onPointerDown={(e) => handlePiecePointer(e, p.row, p.col, p)}
-            className={
-              shakingPieceId === p.id ? 'shake-error' :
-              kingInCheckId === p.id ? 'in-check-warning' :
-              movedPieceId === p.id ? 'piece-enter' : ''
-            }
-            filter="url(#piece-shadow)"
-            style={{ cursor: 'pointer', touchAction: 'none' }}
-          >
-            {isSelected && <circle cx={cx} cy={cy} r="50" fill="none" stroke={theme.selectedGlow} strokeWidth="4" filter="none" />}
-            <circle cx={cx} cy={cy} r="42" fill="url(#revealed-grad)" stroke="#999" strokeWidth="1.5" />
-            {p.isHidden
-              ? <circle cx={cx} cy={cy} r="34" fill="url(#hidden-grad)" stroke="#bba993" strokeWidth="1.5" />
-              : <text x={cx} y={cy + 2} textAnchor="middle" dominantBaseline="middle" fontSize="46" fontWeight="bold"
-                  fill={p.color === 'red' ? theme.redText : theme.blackText}
-                  transform={isFlipped ? `rotate(180, ${cx}, ${cy + 2})` : undefined}>{p.name}</text>
-            }
-          </g>
-        );
-      })}
+        {/* ── PIECES ────────────────────────────────────────────── */}
+        {pieces.map(p => {
+          const cx = p.col * 100 + 50;
+          const cy = p.row * 100 + 50;
+          const isSelected    = selectedPiece?.id === p.id;
+          const isInCheck     = kingInCheckId === p.id;
+          const isShaking     = shakingPieceId === p.id;
+          const isJustMoved   = movedPieceId === p.id;
+          const isValidTarget = validMovesSet.has(`${p.row}-${p.col}`);
+
+          const bgGrad    = isDay
+            ? (isSelected ? 'url(#piece-bg-day-selected)' : 'url(#piece-bg-day)')
+            : (isSelected ? 'url(#piece-bg-night-selected)' : 'url(#piece-bg-night)');
+          const hiddenGrad = isDay ? 'url(#piece-hidden-day)' : 'url(#piece-hidden-night)';
+
+          const outerR    = 44;
+          const innerR    = 38;
+          const outerStroke = isDay
+            ? (isSelected ? '#c8a020' : isValidTarget ? '#b05030' : '#8a6828')
+            : (isSelected ? '#d4a030' : isValidTarget ? '#c06040' : '#5a4818');
+          const innerStroke = isDay
+            ? (isSelected ? '#e8c040' : '#b09050')
+            : (isSelected ? '#f0c840' : '#3a2e10');
+          const outerWidth  = isSelected ? 2.5 : 1.8;
+          const innerWidth  = isSelected ? 1.8 : 1.2;
+
+          const textColor = p.color === 'red' ? theme.redText : theme.blackText;
+
+          const filterAttr = isInCheck
+            ? 'url(#check-glow)'
+            : isSelected
+            ? 'url(#piece-shadow-selected)'
+            : 'url(#piece-shadow)';
+
+          return (
+            <g
+              key={p.id}
+              onPointerDown={(e) => handlePiecePointer(e, p.row, p.col, p)}
+              className={isShaking ? 'shake-error' : isJustMoved ? 'piece-enter' : ''}
+              filter={filterAttr}
+              style={{ cursor: 'pointer', touchAction: 'none' }}
+            >
+              {/* Capture target ring */}
+              {isValidTarget && !p.isHidden && (
+                <circle cx={cx} cy={cy} r={outerR + 5}
+                  fill="none"
+                  stroke="rgba(220,70,50,0.7)"
+                  strokeWidth="2.5"
+                />
+              )}
+
+              {/* Outer ring */}
+              <circle cx={cx} cy={cy} r={outerR}
+                fill={p.isHidden ? hiddenGrad : bgGrad}
+                stroke={outerStroke}
+                strokeWidth={outerWidth}
+              />
+
+              {/* Inner ring — bevel effect */}
+              <circle cx={cx} cy={cy} r={innerR}
+                fill="none"
+                stroke={innerStroke}
+                strokeWidth={innerWidth}
+                opacity="0.7"
+              />
+
+              {/* Highlight spot — 3D light source */}
+              <ellipse
+                cx={cx - 10} cy={cy - 12}
+                rx="14" ry="10"
+                fill={isDay
+                  ? 'rgba(255,255,255,0.35)'
+                  : 'rgba(255,255,255,0.12)'}
+              />
+
+              {/* Piece content */}
+              {p.isHidden ? (
+                <>
+                  {/* Hidden piece pattern — subtle texture */}
+                  <text
+                    x={cx} y={cy + 3}
+                    textAnchor="middle" dominantBaseline="middle"
+                    fontSize="28" fontWeight="400"
+                    fill={isDay ? 'rgba(120,90,40,0.35)' : 'rgba(180,140,60,0.25)'}
+                    style={{ fontFamily: 'serif', userSelect: 'none' }}
+                    transform={isFlipped ? `rotate(180, ${cx}, ${cy + 3})` : undefined}
+                  >囲</text>
+                  {/* Cross mark indicating unknown */}
+                  <line x1={cx-10} y1={cy-10} x2={cx+10} y2={cy+10}
+                    stroke={isDay ? 'rgba(120,90,40,0.2)' : 'rgba(180,140,60,0.15)'}
+                    strokeWidth="1.5" strokeLinecap="round"
+                  />
+                  <line x1={cx+10} y1={cy-10} x2={cx-10} y2={cy+10}
+                    stroke={isDay ? 'rgba(120,90,40,0.2)' : 'rgba(180,140,60,0.15)'}
+                    strokeWidth="1.5" strokeLinecap="round"
+                  />
+                </>
+              ) : (
+                <text
+                  x={cx} y={cy + 2}
+                  textAnchor="middle" dominantBaseline="middle"
+                  fontSize="44" fontWeight="700"
+                  fill={textColor}
+                  style={{
+                    fontFamily: '"Noto Serif SC", "STKaiti", "KaiTi", "FZKai-Z03", serif',
+                    userSelect: 'none',
+                    textShadow: isInCheck ? '0 0 8px rgba(255,80,80,0.8)' : undefined,
+                  }}
+                  transform={isFlipped ? `rotate(180, ${cx}, ${cy + 2})` : undefined}
+                >
+                  {p.name}
+                </text>
+              )}
+            </g>
+          );
+        })}
+
       </g>
     </svg>
   );

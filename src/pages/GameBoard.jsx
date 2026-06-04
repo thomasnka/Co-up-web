@@ -80,6 +80,15 @@ export default function GameBoard({
   // BUG-4 FIX: sync localDemoMode khi game.isDemoMode thay đổi
   useEffect(() => { setLocalDemoMode(isDemoMode); }, [isDemoMode]);
 
+  // Sync kết quả lên Supabase khi gameStatus thay đổi — cả 2 bên đều gọi
+  // Đảm bảo timeout/checkmate từ bên bị động cũng được update DB
+  // idempotent: Supabase PATCH cùng row nhiều lần không sao
+  useEffect(() => {
+    if (gameStatus === 'playing') return;
+    if (!matchId || isSpectator) return;
+    syncResult(gameStatus);
+  }, [gameStatus]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const result = getResultMessage();
 
   const handleExitGame = useCallback(async () => {
@@ -120,8 +129,8 @@ export default function GameBoard({
     ? (matchData?.host_name  || playerName)
     : (matchData?.guest_name || playerName);
   const oppDisplayName = matchData?.host_id === playerId
-    ? (matchData?.guest_name || 'Đang chờ...')
-    : (matchData?.host_name  || 'Đang chờ...');
+    ? (matchData?.guest_name || (isDemoMode ? 'Tự chơi 2 bên' : 'Đang chờ...'))
+    : (matchData?.host_name  || (isDemoMode ? 'Tự chơi 2 bên' : 'Đang chờ...'));
   const oppElo = matchData?.host_id === playerId ? matchData?.guest_elo : matchData?.host_elo;
 
   return (
@@ -184,7 +193,7 @@ export default function GameBoard({
               {/* FIX mobile: nut Demo gon lai */}
               {isWaitingForOpponent && !isDemoMode && (
                 <button onClick={() => { activateDemo(); setLocalDemoMode(true); }} style={{ flexShrink: 0, padding: '3px 7px', backgroundColor: '#4CAF50', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
-                  Demo
+                  Tự chơi 2 bên
                 </button>
               )}
               {isSpectator && <span style={{ flexShrink: 0, padding: '2px 6px', backgroundColor: '#757575', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }}>👁</span>}
@@ -216,10 +225,9 @@ export default function GameBoard({
           </div>
           <div style={{ minHeight: '22px', marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '2px' }}>
             {capturedPieces.red.map((p, i) => {
-              // revealCaptured=true → lộ tên; false → quân úp hiện dấu X
               const showName = !p.isHidden || revealCaptured;
               return (
-                <svg key={i} width="20" height="20" viewBox="0 0 20 20">
+                <svg key={`${i}-${revealCaptured}`} width="20" height="20" viewBox="0 0 20 20">
                   <circle cx="10" cy="10" r="9" fill={theme.pieceBg} stroke={theme.redText} strokeWidth="1.5"/>
                   {showName
                     ? <text x="10" y="13.5" textAnchor="middle" fontSize="10" fontWeight="700" fill={theme.redText} style={{fontFamily:'serif',userSelect:'none'}}>{p.name}</text>
@@ -247,7 +255,7 @@ export default function GameBoard({
             {capturedPieces.black.map((p, i) => {
               const showName = !p.isHidden || revealCaptured;
               return (
-                <svg key={i} width="20" height="20" viewBox="0 0 20 20">
+                <svg key={`${i}-${revealCaptured}`} width="20" height="20" viewBox="0 0 20 20">
                   <circle cx="10" cy="10" r="9" fill={theme.pieceBg} stroke={theme.blackText} strokeWidth="1.5"/>
                   {showName
                     ? <text x="10" y="13.5" textAnchor="middle" fontSize="10" fontWeight="700" fill={theme.blackText} style={{fontFamily:'serif',userSelect:'none'}}>{p.name}</text>

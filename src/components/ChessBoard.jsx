@@ -43,8 +43,13 @@ export default function ChessBoard({
     >
       <defs>
         {/* ── FILTERS ───────────────────────────────────────────── */}
-        <filter id="piece-shadow" x="-25%" y="-25%" width="150%" height="150%">
+        {/* Day filters */}
+        <filter id="piece-shadow-day" x="-25%" y="-25%" width="150%" height="150%">
           <feDropShadow dx="0" dy="2.5" stdDeviation="3.5" floodColor="rgba(0,0,0,0.45)" />
+        </filter>
+        {/* Night filter — stronger shadow + subtle rim light */}
+        <filter id="piece-shadow-night" x="-30%" y="-30%" width="160%" height="160%">
+          <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="rgba(0,0,0,0.9)" />
         </filter>
         <filter id="piece-shadow-selected" x="-30%" y="-30%" width="160%" height="160%">
           <feDropShadow dx="0" dy="0" stdDeviation="8" floodColor={theme.selectedGlow} floodOpacity="0.9" />
@@ -70,21 +75,21 @@ export default function ChessBoard({
           <stop offset="100%" stopColor="#b8a070" />
         </radialGradient>
 
-        {/* ── PIECE GRADIENTS (Night) ────────────────────────────── */}
+        {/* ── PIECE GRADIENTS (Night) — sáng hơn để thấy 3D effect ── */}
         <radialGradient id="piece-bg-night" cx="38%" cy="32%" r="62%">
-          <stop offset="0%"   stopColor="#3a3530" />
-          <stop offset="55%"  stopColor="#2a2520" />
-          <stop offset="100%" stopColor="#1a1510" />
+          <stop offset="0%"   stopColor="#6a6055" />
+          <stop offset="55%"  stopColor="#3e3830" />
+          <stop offset="100%" stopColor="#252018" />
         </radialGradient>
         <radialGradient id="piece-bg-night-selected" cx="38%" cy="32%" r="62%">
-          <stop offset="0%"   stopColor="#4a4035" />
-          <stop offset="55%"  stopColor="#35302a" />
-          <stop offset="100%" stopColor="#252015" />
+          <stop offset="0%"   stopColor="#7a7060" />
+          <stop offset="55%"  stopColor="#504840" />
+          <stop offset="100%" stopColor="#302820" />
         </radialGradient>
         <radialGradient id="piece-hidden-night" cx="38%" cy="32%" r="62%">
-          <stop offset="0%"   stopColor="#2e2920" />
-          <stop offset="50%"  stopColor="#1e1a14" />
-          <stop offset="100%" stopColor="#120f0a" />
+          <stop offset="0%"   stopColor="#5a5045" />
+          <stop offset="50%"  stopColor="#352e25" />
+          <stop offset="100%" stopColor="#1e1a14" />
         </radialGradient>
 
         {/* ── BOARD TEXTURE OVERLAY ─────────────────────────────── */}
@@ -240,10 +245,10 @@ export default function ChessBoard({
           const innerR    = 38;
           const outerStroke = isDay
             ? (isSelected ? '#c8a020' : isValidTarget ? '#b05030' : '#8a6828')
-            : (isSelected ? '#d4a030' : isValidTarget ? '#c06040' : '#5a4818');
+            : (isSelected ? '#d4a030' : isValidTarget ? '#c06040' : '#9a8848');  // sáng hơn
           const innerStroke = isDay
             ? (isSelected ? '#e8c040' : '#b09050')
-            : (isSelected ? '#f0c840' : '#3a2e10');
+            : (isSelected ? '#f0c840' : '#8a7050');  // sáng hơn để thấy bevel
           const outerWidth  = isSelected ? 2.5 : 1.8;
           const innerWidth  = isSelected ? 1.8 : 1.2;
 
@@ -253,7 +258,7 @@ export default function ChessBoard({
             ? 'url(#check-glow)'
             : isSelected
             ? 'url(#piece-shadow-selected)'
-            : 'url(#piece-shadow)';
+            : isDay ? 'url(#piece-shadow-day)' : 'url(#piece-shadow-night)';
 
           return (
             <g
@@ -292,9 +297,17 @@ export default function ChessBoard({
                 cx={cx - 10} cy={cy - 12}
                 rx="14" ry="10"
                 fill={isDay
-                  ? 'rgba(255,255,255,0.35)'
-                  : 'rgba(255,255,255,0.12)'}
+                  ? 'rgba(255,255,255,0.38)'
+                  : 'rgba(255,255,255,0.28)'}
               />
+              {/* Night mode: thêm rim light dưới để tăng 3D */}
+              {!isDay && (
+                <ellipse
+                  cx={cx + 8} cy={cy + 14}
+                  rx="10" ry="6"
+                  fill="rgba(180,140,60,0.12)"
+                />
+              )}
 
               {/* Piece content */}
               {p.isHidden ? (

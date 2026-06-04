@@ -340,6 +340,8 @@ export function useGameState({
       );
       if (status !== 'playing') {
         setGameStatus(status);
+        // Bên bị chiếu bí cũng cần sync result lên Supabase
+        onGameEnd?.(status);
       }
       // Cập nhật kingInCheck cho remote state
       const checkResult = isKingInCheck(remoteState.pieces, remoteState.currentTurn);
@@ -351,7 +353,7 @@ export function useGameState({
         setKingInCheckId(null);
       }
     }
-  }, []);
+  }, [onGameEnd]);
 
   // ── HANDLERS ───────────────────────────────────────────────────────────────
   const triggerErrorShake = (id) => {

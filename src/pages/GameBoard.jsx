@@ -4,9 +4,43 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { useMultiplayer } from '../hooks/useMultiplayer';
+import { useSound } from '../hooks/useSound';
 import ChessBoard from '../components/ChessBoard';
 import ResultOverlay from '../components/ResultOverlay';
 import DrawBanner from '../components/DrawBanner';
+
+// Batch 2/4: render quân bị ăn dạng SVG mini
+function CapturedPieces({ pieces, theme }) {
+  if (!pieces || pieces.length === 0) return null;
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px', minHeight: '22px', alignItems: 'center' }}>
+      {pieces.map((p, i) => (
+        <svg key={i} width="22" height="22" viewBox="0 0 22 22">
+          <circle cx="11" cy="11" r="10"
+            fill={theme.pieceBg}
+            stroke={p.color === 'red' ? theme.redText : theme.blackText}
+            strokeWidth="1.5"
+          />
+          <circle cx="11" cy="11" r="8" fill="none"
+            stroke={p.color === 'red' ? theme.redText : theme.blackText}
+            strokeWidth="0.8" opacity="0.5"
+          />
+          {p.isHidden ? (
+            <>
+              <line x1="7" y1="7" x2="15" y2="15" stroke={theme.lines} strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
+              <line x1="15" y1="7" x2="7" y2="15" stroke={theme.lines} strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
+            </>
+          ) : (
+            <text x="11" y="14.5" textAnchor="middle" fontSize="11" fontWeight="700"
+              fill={p.color === 'red' ? theme.redText : theme.blackText}
+              style={{ fontFamily: '"Noto Serif SC", "STKaiti", serif', userSelect: 'none' }}
+            >{p.name}</text>
+          )}
+        </svg>
+      ))}
+    </div>
+  );
+}
 
 export default function GameBoard({
   gameMode, setScreen, theme, matchId,
@@ -16,6 +50,9 @@ export default function GameBoard({
   const gameRef = useRef(null);
   const [showDrawBanner, setShowDrawBanner] = useState(false);
   const [localDemoMode, setLocalDemoMode] = useState(false);
+
+  // Batch 2: Sound system
+  const sound = useSound();
 
   const handleRemoteMove = useCallback((remoteState) => {
     gameRef.current?.applyRemoteState(remoteState);
@@ -80,25 +117,24 @@ export default function GameBoard({
   useEffect(() => { setLocalDemoMode(isDemoMode); }, [isDemoMode]);
 
   // xqchess roomState: Running khi đã có >= 2 nước đi
-  // Dùng để quyết định confirm khi quit/resign/draw
   const isRunning = turnCount >= 2;
 
-  // xqchess sound: play khi lastMoveSound thay đổi
-  // Batch 2 sẽ implement useSound hook đầy đủ
-  // Hiện tại: placeholder dùng Audio API trực tiếp
+  // Batch 2: Sound effect khi lastMoveSound thay đổi (check > eat > move)
   useEffect(() => {
     if (!lastMoveSound) return;
-    try {
-      const audio = new Audio(`/sounds/${lastMoveSound}.mp3`);
-      audio.volume = 0.8;
-      audio.play().catch(() => {}); // ignore autoplay block
-    } catch (e) {}
-  }, [lastMoveSound]);
+    sound.playMove(lastMoveSound);
+  }, [lastMoveSound]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Batch 2: Wire join sound qua registerCallbacks
+  useEffect(() => {
+    mp.registerCallbacks?.({
+      onOpponentJoined: () => sound.playJoin(),
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const result = getResultMessage();
 
-  // xqchess: chỉ confirm khi game đang Running (>= 2 nước đi)
-  // New/Ready → thoát thẳng không cần confirm
+  // xqchess: chỉ confirm khi Running (>= 2 nước)
   const handleExitGame = useCallback(async () => {
     if (isSpectator) { setScreen('menu'); return; }
     if (gameStatus === 'playing' && !isWaitingForOpponent && isRunning) {
@@ -183,7 +219,13 @@ export default function GameBoard({
                 {oppDisplayName}
                 {oppElo && <span style={{ fontSize: '0.8rem', opacity: 0.7 }}> ({oppElo})</span>}
               </span>
-              {/* FIX mobile: nut Demo gon lai */}
+              {/* Batch 4: hiển thị màu của mình khi đang chờ đối thủ */}
+              {isWaitingForOpponent && !isDemoMode && myColor && (
+                <span style={{ flexShrink: 0, padding: '2px 8px', backgroundColor: myColor === 'red' ? '#d32f2f' : '#1a1a1a', color: '#fff', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                  {myColor === 'red' ? '🔴 Đỏ' : '⚫ Đen'}
+                </span>
+              )}
+              {/* Demo button */}
               {isWaitingForOpponent && !isDemoMode && (
                 <button onClick={() => { activateDemo(); setLocalDemoMode(true); }} style={{ flexShrink: 0, padding: '3px 7px', backgroundColor: '#4CAF50', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                   Demo
@@ -199,8 +241,8 @@ export default function GameBoard({
               {currentTurn === 'black' ? formatTime(timeLeft) : '01:00'}
             </div>
           </div>
-          <div style={{ fontSize: '0.8rem', color: theme.redText, minHeight: '18px', marginTop: '4px', fontWeight: 'bold' }}>
-            {capturedPieces.red.map((p, i) => <span key={i} style={{ marginRight: '4px' }}>{p.isHidden ? '?' : p.name}</span>)}
+          <div style={{ minHeight: '22px', marginTop: '4px' }}>
+            <CapturedPieces pieces={capturedPieces.red} theme={theme} />
           </div>
         </div>
 
@@ -216,8 +258,8 @@ export default function GameBoard({
 
         {/* Ban */}
         <div style={{ display: 'flex', flexDirection: 'column', padding: '8px 12px', backgroundColor: theme.panelBg, borderTop: `1px solid ${theme.lines}`, borderBottomLeftRadius: '8px', borderBottomRightRadius: '8px', boxShadow: currentTurn === 'red' ? '0 4px 10px rgba(76,175,80,0.2)' : 'none', transition: 'all 0.3s' }}>
-          <div style={{ fontSize: '0.8rem', color: theme.blackText, minHeight: '18px', marginBottom: '4px', fontWeight: 'bold' }}>
-            {capturedPieces.black.map((p, i) => <span key={i} style={{ marginRight: '4px' }}>{p.isHidden ? '?' : p.name}</span>)}
+          <div style={{ minHeight: '22px', marginBottom: '4px' }}>
+            <CapturedPieces pieces={capturedPieces.black} theme={theme} />
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0, flex: 1 }}>
@@ -243,6 +285,10 @@ export default function GameBoard({
           <button onClick={() => setIsNightMode(!isNightMode)} style={{ flex: '0 0 42px', padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
             {isNightMode ? '☀️' : '🌙'}
           </button>
+          {/* Batch 2: sound toggle */}
+          <button onClick={sound.toggleMute} title={sound.isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'} style={{ flex: '0 0 42px', padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
+            {sound.isMuted ? '🔇' : '🔊'}
+          </button>
           <button onClick={handleExitGame} style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem' }}>
             ⬅ Thoát
           </button>
@@ -251,11 +297,7 @@ export default function GameBoard({
               <button onClick={handleDraw} disabled={gameStatus !== 'playing'} style={{ flex: 1, padding: '10px 0', border: 'none', borderRadius: '6px', backgroundColor: gameStatus !== 'playing' ? '#aaa' : '#757575', color: '#fff', fontWeight: 'bold', cursor: gameStatus !== 'playing' ? 'not-allowed' : 'pointer', fontSize: '0.9rem' }}>
                 🤝 Hòa
               </button>
-              {/* xqchess: chỉ confirm resign khi isRunning */}
-              <button onClick={() => {
-                if (!isRunning) { handleResign(currentTurn); return; }
-                handleResign(currentTurn);
-              }} disabled={gameStatus !== 'playing'} style={{ flex: 1, padding: '10px 0', border: 'none', borderRadius: '6px', backgroundColor: gameStatus !== 'playing' ? '#aaa' : '#d32f2f', color: '#fff', fontWeight: 'bold', cursor: gameStatus !== 'playing' ? 'not-allowed' : 'pointer', fontSize: '0.9rem' }}>
+              <button onClick={() => handleResign(currentTurn)} disabled={gameStatus !== 'playing'} style={{ flex: 1, padding: '10px 0', border: 'none', borderRadius: '6px', backgroundColor: gameStatus !== 'playing' ? '#aaa' : '#d32f2f', color: '#fff', fontWeight: 'bold', cursor: gameStatus !== 'playing' ? 'not-allowed' : 'pointer', fontSize: '0.9rem' }}>
                 🏳️ Thua
               </button>
             </>

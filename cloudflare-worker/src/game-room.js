@@ -312,16 +312,40 @@ export class GameRoom {
           players:   this._getPlayers(),
           status:    roomMeta.status,
           myRole:    role,
-          gameState: savedState ?? null, // F1: state recovery khi reconnect
+          gameState: savedState ?? null,
         }));
 
         if (role === 'guest') {
+          // xqchess: server assign colors khi guest join — random, broadcast 'ready' cho cả 2
+          const savedColors = await this.state.storage.get('colors');
+          let colors = savedColors;
+
+          if (!colors) {
+            // Assign random lần đầu
+            const hostColor  = Math.random() < 0.5 ? 'red' : 'black';
+            const guestColor = hostColor === 'red' ? 'black' : 'red';
+            colors = { [roomMeta.hostId]: hostColor, [playerId]: guestColor };
+            await this.state.storage.put('colors', colors);
+          }
+
+          // Broadcast 'ready' + colors cho cả 2 player
+          const readyMsg = { type: 'ready', colors };
+          this._sendTo(roomMeta.hostId, readyMsg);
+          ws.send(JSON.stringify(readyMsg));
+
+          // Thông báo opponent_connected
           this._sendTo(roomMeta.hostId, {
             type:   'opponent_connected',
             player: { id: playerId, name: playerName, elo: playerElo },
           });
         }
+
         if (role === 'host' && roomMeta.guestId) {
+          // Host reconnect khi game đang playing → gửi lại colors nếu có
+          const savedColors = await this.state.storage.get('colors');
+          if (savedColors) {
+            ws.send(JSON.stringify({ type: 'ready', colors: savedColors }));
+          }
           this._sendTo(roomMeta.guestId, {
             type:   'opponent_connected',
             player: { id: playerId, name: playerName, elo: playerElo },
@@ -397,8 +421,9 @@ export class GameRoom {
           roomMeta.status = 'finished';
           await this.state.storage.put('roomMeta', roomMeta);
         }
-        // Clear game state khi kết thúc để giải phóng storage
+        // Clear game state và colors khi kết thúc
         await this.state.storage.delete('gameState');
+        await this.state.storage.delete('colors');
         break;
       }
 

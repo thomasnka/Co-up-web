@@ -42,6 +42,7 @@ export function useMultiplayer({
   const onDrawRequestRef   = useRef(onDrawRequest);
   const onMoveRejectedRef  = useRef(null);   // B2: rollback callback
   const onPieceRevealedRef = useRef(null);   // S1: piece reveal callback
+  const onOpponentJoinedRef = useRef(null);  // sound: play join khi đối thủ vào phòng
   useEffect(() => { onRemoteMoveRef.current  = onRemoteMove; },  [onRemoteMove]);
   useEffect(() => { onMatchUpdateRef.current = onMatchUpdate; }, [onMatchUpdate]);
   useEffect(() => { onDrawRequestRef.current = onDrawRequest; }, [onDrawRequest]);
@@ -66,30 +67,41 @@ export function useMultiplayer({
     fetchMatch();
   }, [matchId]);
 
-  // ── Assign host color khi guest vừa join ──────────────────────────────────
-  // Chạy sau khi matchData load và status mới chuyển sang 'playing'
+  // ── Color assignment — xqchess style ────────────────────────────────────────
+  // xqchess: server assign color qua 'ready' event: colors = { username: colorInt }
+  // Trong game của chúng ta: game-room.js assign random khi guest join,
+  // trả về qua 'ready' WS message: { type: 'ready', colors: { hostId: 'red'|'black', guestId: 'red'|'black' } }
+  // useMultiplayer nhận colors → update matchData.host_color
+  // Không cần host tự assign nữa — tránh race condition 2 client cùng write
+  //
+  // Fallback: nếu WS chưa trả về (offline/slow) → giữ logic cũ assign từ host
   const assignedRef = useRef(false);
   useEffect(() => {
     if (!matchData) return;
     if (matchData.status !== 'playing') return;
-    if (matchData.host_color) return;
+    if (matchData.host_color) return;   // đã có color từ server
     if (matchData.host_id !== playerId) return;
     if (assignedRef.current) return;
 
-    assignedRef.current = true;
-    const randomColor = Math.random() < 0.5 ? 'red' : 'black';
+    // Chờ 2s để WS 'ready' message có cơ hội đến trước
+    const timeout = setTimeout(() => {
+      if (assignedRef.current) return;
+      // Fallback: assign local nếu vẫn chưa có color
+      assignedRef.current = true;
+      const randomColor = Math.random() < 0.5 ? 'red' : 'black';
+      supabase.from('matches')
+        .update({ host_color: randomColor })
+        .eq('id', matchData.id)
+        .then(({ error }) => {
+          if (error) {
+            console.error('[useMultiplayer] assignColor fallback error:', error.message);
+          } else {
+            setMatchData(prev => prev ? { ...prev, host_color: randomColor } : prev);
+          }
+        });
+    }, 2000);
 
-    supabase.from('matches')
-      .update({ host_color: randomColor })
-      .eq('id', matchData.id)
-      .then(({ data, error }) => {
-        if (error) {
-          console.error('[useMultiplayer] assignColor error:', error.message);
-        } else {
-          // Cập nhật local matchData ngay
-          setMatchData(prev => prev ? { ...prev, host_color: randomColor } : prev);
-        }
-      });
+    return () => clearTimeout(timeout);
   }, [matchData?.status, matchData?.host_color, matchData?.host_id, playerId]);
 
   // ── WebSocket message handler ─────────────────────────────────────────────
@@ -106,9 +118,37 @@ export function useMultiplayer({
           }
           return updated;
         });
-        // C4 + F1: server trả gameState khi spectator join hoặc reconnect
+        // C4 + F1: nếu server trả về gameState khi spectator join hoặc reconnect
         if (msg.gameState) {
           onRemoteMoveRef.current?.(msg.gameState);
+        }
+        break;
+      }
+
+      case 'ready': {
+        // xqchess: server assign colors khi game bắt đầu
+        // msg.colors = { [hostId]: 'red'|'black', [guestId]: 'red'|'black' }
+        if (msg.colors && playerId) {
+          const myAssignedColor = msg.colors[playerId];
+          if (myAssignedColor) {
+            assignedRef.current = true; // ngăn fallback timeout chạy
+            setMatchData(prev => {
+              if (!prev) return prev;
+              // host_color là màu của host — tính ngược nếu cần
+              const hostColor = prev.host_id === playerId
+                ? myAssignedColor
+                : (myAssignedColor === 'red' ? 'black' : 'red');
+              return { ...prev, host_color: hostColor, status: 'playing' };
+            });
+            // Persist lên Supabase
+            if (matchId) {
+              const hostColor = msg.colors[matchId] ?? myAssignedColor;
+              supabase.from('matches')
+                .update({ host_color: msg.colors[Object.keys(msg.colors)[0]] })
+                .eq('id', matchId)
+                .catch(() => {});
+            }
+          }
         }
         break;
       }
@@ -120,6 +160,8 @@ export function useMultiplayer({
         }
         break;
       }
+
+
 
       case 'move': {
         // Nước đi từ đối thủ
@@ -167,7 +209,6 @@ export function useMultiplayer({
       }
 
       case 'opponent_connected': {
-        // Đối thủ reconnect — clear disconnect flag
         setOpponentDisconnected(false);
         setMatchData(prev => {
           if (!prev) return prev;
@@ -179,6 +220,8 @@ export function useMultiplayer({
           onMatchUpdateRef.current?.(updated);
           return updated;
         });
+        // xqchess: play join sound khi đối thủ vào phòng
+        onOpponentJoinedRef.current?.();
         break;
       }
 
@@ -218,13 +261,15 @@ export function useMultiplayer({
     setIsSyncing(wsStatus === 'connecting' || wsStatus === 'reconnecting');
   }, [wsStatus]);
 
-  // F1 FIX: khi WS reconnect thành công → request state recovery từ DO
+  // xqchess reconnect: resyncAfterReconnect gọi lại joinGame để get full state
+  // Tương đương: gửi request_state_recovery → server trả gameState qua 'state_recovery'
   const prevWsStatus = useRef(wsStatus);
   useEffect(() => {
     if (prevWsStatus.current !== 'open' && wsStatus === 'open' && matchId) {
-      // Reconnect sau khi mất kết nối → yêu cầu server gửi lại state hiện tại
       wsSend({ type: 'request_state_recovery', matchId, playerId });
       setOpponentDisconnected(false);
+      // Reset assignedRef để color có thể được reassign nếu cần
+      // (xqchess: onReady reassigns colors sau reconnect)
     }
     prevWsStatus.current = wsStatus;
   }, [wsStatus, matchId, playerId, wsSend]);
@@ -237,9 +282,7 @@ export function useMultiplayer({
     return null;
   })();
 
-  // C4: isSpectator = player join phòng không phải host/guest
-  // Điều kiện: matchData tồn tại, không có màu (myColor=null), và match đang playing
-  // Guard: khi match=waiting và guest chưa join, myColor cũng null nhưng KHÔNG phải spectator
+  // C4: isSpectator — không phải host/guest, match đang playing
   const isSpectator = matchData !== null
     && myColor === null
     && matchData.status === 'playing'
@@ -319,10 +362,11 @@ export function useMultiplayer({
     return { error: null };
   }, [wsSend, playerId, matchId]);
 
-  // ── REGISTER CALLBACKS (B2, S1) ──────────────────────────────────────────
-  const registerCallbacks = useCallback(({ onMoveRejected, onPieceRevealed } = {}) => {
-    if (onMoveRejected)  onMoveRejectedRef.current  = onMoveRejected;
-    if (onPieceRevealed) onPieceRevealedRef.current = onPieceRevealed;
+  // ── REGISTER CALLBACKS ───────────────────────────────────────────────────
+  const registerCallbacks = useCallback(({ onMoveRejected, onPieceRevealed, onOpponentJoined } = {}) => {
+    if (onMoveRejected)   onMoveRejectedRef.current   = onMoveRejected;
+    if (onPieceRevealed)  onPieceRevealedRef.current  = onPieceRevealed;
+    if (onOpponentJoined) onOpponentJoinedRef.current = onOpponentJoined;
   }, []);
 
   // ── RETURN ─────────────────────────────────────────────────────────────────

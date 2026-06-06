@@ -469,7 +469,6 @@ export default function GameBoard({
             style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
             {isMuted ? '🔇' : '🔊'}
           </button>
-          )}
           <button onClick={() => setIsNightMode(!isNightMode)} title={isNightMode ? 'Chế độ sáng' : 'Chế độ tối'}
             style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
             {isNightMode ? '☀️' : '🌙'}

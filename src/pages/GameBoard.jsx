@@ -530,7 +530,7 @@ export default function GameBoard({
             style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
             {isNightMode ? '☀️' : '🌙'}
           </button>
-        </div></div>{/* end hidden control bar clone */}
+        </div>{/* end hidden control bar clone */}
 
         {/* Chat box — hiển thị khi showChat=true, nằm trên biên bản */}
         {showChat && matchId && !isSpectator && (

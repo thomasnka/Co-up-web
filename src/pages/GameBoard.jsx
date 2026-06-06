@@ -16,6 +16,7 @@ export default function GameBoard({
   const gameRef = useRef(null);
   const [showDrawBanner, setShowDrawBanner] = useState(false);
   const [localDemoMode, setLocalDemoMode] = useState(false);
+  const [timerFlash, setTimerFlash] = useState(false); // flash khi game bắt đầu
   const [revealCaptured, setRevealCaptured] = useState(false);
   const [isMuted, setIsMuted] = useState(() => localStorage.getItem('xq.muted') === 'true');
   const [showChat, setShowChat] = useState(false);
@@ -86,6 +87,17 @@ export default function GameBoard({
   // BUG-4 FIX: sync localDemoMode khi game.isDemoMode thay đổi
   useEffect(() => { setLocalDemoMode(isDemoMode); }, [isDemoMode]);
 
+  // Flash timer + play sound khi game chuyển sang playing
+  const prevGameStatusRef = useRef(null);
+  useEffect(() => {
+    if (gameStatus === 'playing' && prevGameStatusRef.current !== 'playing') {
+      setTimerFlash(true);
+      playSound('join');
+      setTimeout(() => setTimerFlash(false), 700);
+    }
+    prevGameStatusRef.current = gameStatus;
+  }, [gameStatus]); // eslint-disable-line
+
   // ── WEB AUDIO SOUND ENGINE ─────────────────────────────────────────────────
   // Dùng oscillator — không cần file mp3, không bị autoplay block
   // Prime AudioContext khi user tương tác lần đầu
@@ -130,6 +142,11 @@ export default function GameBoard({
           gain.gain.setValueAtTime(0.12, now + 0.1);
           gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
           osc.start(now); osc.stop(now + 0.25); break;
+        case 'illegal': // tiếng lắc — buzz ngắn
+          osc.type = 'sawtooth'; osc.frequency.setValueAtTime(220, now);
+          osc.frequency.exponentialRampToValueAtTime(110, now + 0.12);
+          gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+          osc.start(now); osc.stop(now + 0.13); break;
         case 'join':  // tiếng chào — nốt lên
           osc.type = 'sine'; osc.frequency.setValueAtTime(440, now);
           osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
@@ -150,6 +167,15 @@ export default function GameBoard({
     if (!lastMoveSound) return;
     playSound(lastMoveSound);
   }, [lastMoveSound]); // eslint-disable-line
+
+  // Illegal move sound khi quân bị shake
+  const prevShakingRef = useRef(null);
+  useEffect(() => {
+    if (shakingPieceId && shakingPieceId !== prevShakingRef.current) {
+      playSound('illegal');
+    }
+    prevShakingRef.current = shakingPieceId;
+  }, [shakingPieceId]); // eslint-disable-line
 
   // ── CHAT ───────────────────────────────────────────────────────────────────
   // Scroll xuống cuối khi có tin mới
@@ -314,6 +340,7 @@ export default function GameBoard({
               {isSyncing   && <span style={{ flexShrink: 0, fontSize: '0.7rem', opacity: 0.6 }}>⏳</span>}
             </div>
             <div
+              className={`timer-badge${timerFlash ? ' timer-game-start' : ''}`}
               ref={el => {
                 registerTimerDisplay?.('black', el);
                 // Lưu màu inactive vào dataset để DOM update dùng đúng màu
@@ -393,6 +420,7 @@ export default function GameBoard({
               </span>
             </div>
             <div
+              className={`timer-badge${timerFlash ? ' timer-game-start' : ''}`}
               ref={el => {
                 registerTimerDisplay?.('red', el);
                 if (el) {
@@ -418,7 +446,7 @@ export default function GameBoard({
         </div>
 
         {/* Control bar — nằm trong cột 1, bề ngang = bàn cờ */}
-        <div style={{ display: 'flex', gap: '6px', width: '100%' }}>
+        <div className="control-bar" style={{ display: 'flex', gap: '6px', width: '100%' }}>
           <button onClick={handleExitGame}
             style={{ flex: 2, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
             ⬅ Thoát
@@ -460,7 +488,7 @@ export default function GameBoard({
       </div>
 
       {/* Cot 2: Chat + Bien ban */}
-      <div style={{ width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+      <div className="side-panel" style={{ width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
         {/* Control bar đã chuyển xuống cột 1 — nằm ngay dưới panel bản thân */}
         <div style={{ display: 'none' }}>
           <button onClick={handleExitGame}

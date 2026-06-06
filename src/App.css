@@ -139,3 +139,19 @@ svg {
 @media (prefers-reduced-motion: reduce) {
   .piece-flip, .piece-enter, .piece-capture { animation: none; }
 }
+/* ── TIMER FLASH khi game bắt đầu ─────────────────────────────────────── */
+@keyframes timer-game-start {
+  0%   { box-shadow: 0 0 0 0 rgba(76,175,80,0.9); transform: scale(1); }
+  40%  { box-shadow: 0 0 0 14px rgba(76,175,80,0); transform: scale(1.1); }
+  100% { box-shadow: 0 0 0 0 rgba(76,175,80,0); transform: scale(1); }
+}
+.timer-game-start {
+  animation: timer-game-start 0.7s ease-out forwards;
+}
+/* ── MOBILE RESPONSIVE ─────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .side-panel { display: none !important; }
+  .control-bar { flex-wrap: wrap !important; gap: 4px !important; }
+  .control-bar button { font-size: 0.75rem !important; padding: 8px 0 !important; }
+  .timer-badge { font-size: 0.8rem !important; padding: 3px 8px !important; min-width: 50px !important; }
+}

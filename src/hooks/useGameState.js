@@ -414,7 +414,7 @@ export function useGameState({
     return `0${m}:${r < 10 ? '0' : ''}${r}`;
   };
 
-  const activateDemo = useCallback(() => { setIsDemoMode(true); }, []);
+  const activateDemo = useCallback(() => { turnStartedAtRef.current = null; setTimerResetCount(c => c + 1); setIsDemoMode(true); }, []);
 
   const handleResign = useCallback((turnColor) => {
     if (window.confirm('Bạn xác nhận muốn nhận thua ván đấu này?')) {

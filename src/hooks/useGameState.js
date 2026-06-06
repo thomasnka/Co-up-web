@@ -163,14 +163,7 @@ export function useGameState({
         timerRef.current = null;
         timerEndAtRef.current = null;
         timeLeftRef.current = 0;
-        // Update DOM
-        const el = timerDisplayRefsRef.current?.get(currentTurn);
-        if (el) {
-          el.textContent = '00:00';
-          el.style.backgroundColor = '#d32f2f';
-          el.style.color = '#fff';
-          el.style.border = '2px solid #b71c1c';
-        }
+        setTimeLeft(0);
         // Xử lý timeout ngay
         setGameStatus(prev => prev === 'playing' ? `timeout_${currentTurnRef.current}` : prev);
         return;

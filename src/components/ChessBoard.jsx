@@ -294,22 +294,14 @@ export default function ChessBoard({
                 opacity="0.7"
               />
 
-              {/* Highlight spot — 3D light source */}
-              <ellipse
-                cx={cx - 10} cy={cy - 12}
-                rx="14" ry="10"
+              {/* Highlight spot — subtle top-left glow, không oval rõ */}
+              <circle
+                cx={cx - 8} cy={cy - 10}
+                r="16"
                 fill={isDay
-                  ? 'rgba(255,255,255,0.38)'
-                  : 'rgba(255,255,255,0.28)'}
+                  ? 'rgba(255,255,255,0.22)'
+                  : 'rgba(255,255,255,0.10)'}
               />
-              {/* Night mode: thêm rim light dưới để tăng 3D */}
-              {!isDay && (
-                <ellipse
-                  cx={cx + 8} cy={cy + 14}
-                  rx="10" ry="6"
-                  fill="rgba(180,140,60,0.12)"
-                />
-              )}
 
               {/* Piece content */}
               {p.isHidden ? (

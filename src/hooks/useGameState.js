@@ -106,6 +106,7 @@ export function useGameState({
     setGameStatus('playing');
     timeLeftRef.current = 60;
     timerEndAtRef.current = null;
+    timerResetCountRef.current = 0;
     setIsDemoMode(false);
     setHistoryStates([]);
     setHalfMoveClock(0);
@@ -133,15 +134,15 @@ export function useGameState({
   // - Timeout: setGameStatus ngay, không qua useState intermediary
   const timeLeftRef = useRef(60);
   const timerEndAtRef = useRef(null);
+  const timerResetCountRef = useRef(0); // tăng mỗi khi cần reset timer
 
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     if (gameStatus !== 'playing' || (isWaitingForOpponent && !isDemoMode)) return;
 
-    // Set absolute end time nếu chưa có (reset sau mỗi nước đi)
-    if (!timerEndAtRef.current) {
-      timerEndAtRef.current = Date.now() + (timeLeftRef.current * 1000);
-    }
+    // Luôn tạo endAt mới khi effect chạy (do currentTurn đổi hoặc reset)
+    // Dùng timeLeftRef.current = 60 đã được set trước đó
+    timerEndAtRef.current = Date.now() + (timeLeftRef.current * 1000);
 
     const tick = () => {
       const remainMs = timerEndAtRef.current - Date.now();
@@ -192,7 +193,7 @@ export function useGameState({
     tick(); // render ngay
     timerRef.current = setInterval(tick, 250);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [currentTurn, gameStatus, isDemoMode, isWaitingForOpponent]);
+  }, [currentTurn, gameStatus, isDemoMode, isWaitingForOpponent, timerResetCountRef.current]); // eslint-disable-line
 
   // ── INTERACTION ────────────────────────────────────────────────────────────
   // B4 FIX: xóa tham số isWaitingForOpponent khỏi signature
@@ -303,9 +304,10 @@ export function useGameState({
       setMovedPieceId(selectedPiece.id); // F4/F5: trigger animation
       setCurrentTurn(nextTurnColor);
       currentTurnRef.current = nextTurnColor;
-      // Reset timer sau mỗi nước đi
+      // Reset timer sau mỗi nước đi — tăng resetCount để trigger useEffect
       timeLeftRef.current = 60;
-      timerEndAtRef.current = null; // clear để useEffect timer tạo mới với endAt đúng
+      timerEndAtRef.current = null;
+      timerResetCountRef.current += 1;
       setTimeLeft(60);
 
       // Game end check
@@ -351,6 +353,7 @@ export function useGameState({
     setMovedPieceId(null);
     timeLeftRef.current = 60;
     timerEndAtRef.current = null;
+    timerResetCountRef.current = 0;
     setTimeLeft(60);
 
     // Chạy checkGameStatus sau khi apply remote state

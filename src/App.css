@@ -155,3 +155,29 @@ svg {
   .control-bar button { font-size: 0.75rem !important; padding: 8px 0 !important; }
   .timer-badge { font-size: 0.8rem !important; padding: 3px 8px !important; min-width: 50px !important; }
 }
+
+/* ── Chess-clock style timer ──────────────────────────── */
+.timer-badge--active {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 3px rgba(76,175,80,0.45);
+}
+.timer-badge--inactive {
+  opacity: 0.62;
+  transform: scale(1.0);
+}
+
+/* Pulsing tick dot — shows on active side */
+.clock-tick-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  margin-right: 5px;
+  vertical-align: middle;
+  animation: clock-pulse 1s ease-in-out infinite;
+}
+@keyframes clock-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.3; transform: scale(0.7); }
+}

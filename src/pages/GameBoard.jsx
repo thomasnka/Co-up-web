@@ -361,6 +361,7 @@ export default function GameBoard({
                 border: currentTurn === 'black' ? '2px solid #2e7d32' : '2px solid transparent',
               }}
             >
+              {currentTurn === 'black' && gameStatus === 'playing' && <span className="clock-tick-dot" />}
               {currentTurn === 'black' ? formatTime(timeLeft) : (gameStatus === 'playing' ? '01:00' : '--:--')}
             </div>
           </div>
@@ -440,6 +441,7 @@ export default function GameBoard({
                 border: currentTurn === 'red' ? '2px solid #2e7d32' : '2px solid transparent',
               }}
             >
+              {currentTurn === 'red' && gameStatus === 'playing' && <span className="clock-tick-dot" />}
               {currentTurn === 'red' ? formatTime(timeLeft) : (gameStatus === 'playing' ? '01:00' : '--:--')}
             </div>
           </div>

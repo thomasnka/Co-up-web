@@ -17,12 +17,12 @@ export default function GameBoard({
   const [showDrawBanner, setShowDrawBanner] = useState(false);
   const [localDemoMode, setLocalDemoMode] = useState(false);
   const [timerFlash, setTimerFlash] = useState(false); // flash khi game bắt đầu
-  const [revealCaptured, setRevealCaptured] = useState(false);
+  const revealCaptured = false; // Phase2: matchData?.reveal_captured ?? false
   const [isMuted, setIsMuted] = useState(() => localStorage.getItem('xq.muted') === 'true');
-  const [showChat, setShowChat] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const chatEndRef = useRef(null);
+  const isDebugMode = new URLSearchParams(window.location.search).get('debug') === '1';
   const audioCtxRef = useRef(null);
 
   const handleRemoteMove = useCallback((remoteState) => {
@@ -180,8 +180,8 @@ export default function GameBoard({
   // ── CHAT ───────────────────────────────────────────────────────────────────
   // Scroll xuống cuối khi có tin mới
   useEffect(() => {
-    if (showChat) chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages, showChat]);
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
 
   // Nhận chat message từ WS
   useEffect(() => {
@@ -331,7 +331,7 @@ export default function GameBoard({
                 </span>}
               </span>
               {/* FIX mobile: nut Demo gon lai */}
-              {isWaitingForOpponent && !isDemoMode && (
+              {isWaitingForOpponent && !isDemoMode && isDebugMode && (
                 <button onClick={() => { activateDemo(); setLocalDemoMode(true); }} style={{ flexShrink: 0, padding: '3px 7px', backgroundColor: '#4CAF50', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                   Tự chơi 2 bên
                 </button>
@@ -465,22 +465,10 @@ export default function GameBoard({
               </button>
             </>
           )}
-          <button onClick={() => setRevealCaptured(v => !v)} title={revealCaptured ? 'Úp lại quân đã ăn' : 'Lật quân đã ăn'}
-            style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: revealCaptured ? (isNightMode ? '#444' : '#e8f5e9') : theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
-            {revealCaptured ? '👁' : '🫣'}
-          </button>
           <button onClick={toggleMute} title={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
             style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
             {isMuted ? '🔇' : '🔊'}
           </button>
-          {matchId && !isSpectator && (
-            <button onClick={() => setShowChat(v => !v)} title="Chat"
-              style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: showChat ? (isNightMode ? '#444' : '#e3f2fd') : theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', position: 'relative' }}>
-              💬
-              {chatMessages.filter(m => m.from === 'opp').length > 0 && !showChat && (
-                <span style={{ position: 'absolute', top: '4px', right: '4px', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#f44336' }} />
-              )}
-            </button>
           )}
           <button onClick={() => setIsNightMode(!isNightMode)} title={isNightMode ? 'Chế độ sáng' : 'Chế độ tối'}
             style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
@@ -491,56 +479,16 @@ export default function GameBoard({
 
       {/* Cot 2: Chat + Bien ban */}
       <div className="side-panel" style={{ width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-        {/* Control bar đã chuyển xuống cột 1 — nằm ngay dưới panel bản thân */}
-        <div style={{ display: 'none' }}>
-          <button onClick={handleExitGame}
-            style={{ flex: 2, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
-            ⬅ Thoát
-          </button>
-          {!isSpectator && (
-            <>
-              <button onClick={handleDraw} disabled={gameStatus !== 'playing'}
-                style={{ flex: 2, padding: '10px 0', border: 'none', borderRadius: '6px', backgroundColor: gameStatus !== 'playing' ? (isNightMode ? '#444' : '#bbb') : '#757575', color: '#fff', fontWeight: 'bold', cursor: gameStatus !== 'playing' ? 'not-allowed' : 'pointer', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
-                🤝 Cầu hòa
-              </button>
-              <button onClick={() => handleResign(currentTurn)} disabled={gameStatus !== 'playing'}
-                style={{ flex: 2, padding: '10px 0', border: 'none', borderRadius: '6px', backgroundColor: gameStatus !== 'playing' ? (isNightMode ? '#444' : '#bbb') : '#d32f2f', color: '#fff', fontWeight: 'bold', cursor: gameStatus !== 'playing' ? 'not-allowed' : 'pointer', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
-                🏳️ Nhận thua
-              </button>
-            </>
-          )}
-          <button onClick={() => setRevealCaptured(v => !v)} title={revealCaptured ? 'Úp lại quân đã ăn' : 'Lật quân đã ăn'}
-            style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: revealCaptured ? (isNightMode ? '#444' : '#e8f5e9') : theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
-            {revealCaptured ? '👁' : '🫣'}
-          </button>
-          <button onClick={toggleMute} title={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
-            style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
-            {isMuted ? '🔇' : '🔊'}
-          </button>
-          {matchId && !isSpectator && (
-            <button onClick={() => setShowChat(v => !v)} title="Chat"
-              style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: showChat ? (isNightMode ? '#444' : '#e3f2fd') : theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', position: 'relative' }}>
-              💬
-              {chatMessages.filter(m => m.from === 'opp').length > 0 && !showChat && (
-                <span style={{ position: 'absolute', top: '4px', right: '4px', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#f44336' }} />
-              )}
-            </button>
-          )}
-          <button onClick={() => setIsNightMode(!isNightMode)} title={isNightMode ? 'Chế độ sáng' : 'Chế độ tối'}
-            style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: `1px solid ${theme.lines}`, backgroundColor: theme.panelBg, color: theme.textColor, fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
-            {isNightMode ? '☀️' : '🌙'}
-          </button>
-        </div>{/* end hidden control bar clone */}
+
 
         {/* Chat box — hiển thị khi showChat=true, nằm trên biên bản */}
-        {showChat && matchId && !isSpectator && (
+        {matchId && !isSpectator && (
           <div style={{ backgroundColor: theme.panelBg, borderRadius: '8px', border: `1px solid ${theme.lines}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <div style={{ padding: '8px 12px', backgroundColor: isNightMode ? '#222' : '#f0f0f0', borderBottom: `1px solid ${theme.lines}`, fontWeight: 'bold', color: theme.textColor, fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span>💬 Chat</span>
-              <button onClick={() => setShowChat(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: theme.textColor, fontSize: '1rem', padding: '0 4px' }}>✕</button>
             </div>
             {/* Messages */}
-            <div style={{ height: '140px', overflowY: 'auto', padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div style={{ height: '160px', overflowY: 'auto', padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               {chatMessages.length === 0 ? (
                 <div style={{ opacity: 0.4, fontStyle: 'italic', textAlign: 'center', marginTop: '16px', fontSize: '0.8rem', color: theme.textColor }}>Chưa có tin nhắn</div>
               ) : (

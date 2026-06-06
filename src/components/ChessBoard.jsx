@@ -46,11 +46,11 @@ export default function ChessBoard({
         {/* ── FILTERS ───────────────────────────────────────────── */}
         {/* Day filters */}
         <filter id="piece-shadow-day" x="-25%" y="-25%" width="150%" height="150%">
-          <feDropShadow dx="0" dy="2.5" stdDeviation="3.5" floodColor="rgba(0,0,0,0.45)" />
+          <feDropShadow dx="1.5" dy="2" stdDeviation="2.5" floodColor="rgba(0,0,0,0.4)" />
         </filter>
         {/* Night filter — stronger shadow + subtle rim light */}
         <filter id="piece-shadow-night" x="-30%" y="-30%" width="160%" height="160%">
-          <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="rgba(0,0,0,0.9)" />
+          <feDropShadow dx="2" dy="2.5" stdDeviation="3" floodColor="rgba(0,0,0,0.6)" />
         </filter>
         <filter id="piece-shadow-selected" x="-30%" y="-30%" width="160%" height="160%">
           <feDropShadow dx="0" dy="0" stdDeviation="8" floodColor={theme.selectedGlow} floodOpacity="0.9" />

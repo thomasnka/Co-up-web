@@ -334,7 +334,7 @@ export default function GameBoard({
                 border: currentTurn === 'black' ? '2px solid #2e7d32' : '2px solid transparent',
               }}
             >
-              {currentTurn === 'black' ? formatTime(timeLeft) : '01:00'}
+              {currentTurn === 'black' ? formatTime(timeLeft) : (gameStatus === 'playing' ? '01:00' : '--:--')}
             </div>
           </div>
           <div style={{ minHeight: '22px', marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '2px' }}>
@@ -412,7 +412,7 @@ export default function GameBoard({
                 border: currentTurn === 'red' ? '2px solid #2e7d32' : '2px solid transparent',
               }}
             >
-              {currentTurn === 'red' ? formatTime(timeLeft) : '01:00'}
+              {currentTurn === 'red' ? formatTime(timeLeft) : (gameStatus === 'playing' ? '01:00' : '--:--')}
             </div>
           </div>
         </div>

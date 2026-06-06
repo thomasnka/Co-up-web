@@ -107,7 +107,7 @@ export function useGameState({
     setGameStatus('playing');
     timeLeftRef.current = 60;
     timerEndAtRef.current = null;
-    turnStartedAtRef.current = remoteState.turnStartedAt ?? null;
+    turnStartedAtRef.current = null;
     setTimerResetCount(0);
     setIsDemoMode(false);
     setHistoryStates([]);
@@ -365,7 +365,7 @@ export function useGameState({
     setMovedPieceId(null);
     timeLeftRef.current = 60;
     timerEndAtRef.current = null;
-    turnStartedAtRef.current = remoteState.turnStartedAt ?? null;
+    turnStartedAtRef.current = null;
     setTimerResetCount(c => c + 1);
     setTimeLeft(60);
 

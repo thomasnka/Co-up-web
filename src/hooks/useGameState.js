@@ -81,6 +81,7 @@ export function useGameState({
   const [kingInCheckId, setKingInCheckId]   = useState(null);
   const [gameStatus, setGameStatus]         = useState('playing');
   const [timeLeft, setTimeLeft]             = useState(60);
+  const [timerResetCount, setTimerResetCount]    = useState(0);
   const [isDemoMode, setIsDemoMode]         = useState(false);
   const [historyStates, setHistoryStates]   = useState([]);
   const [halfMoveClock, setHalfMoveClock]   = useState(0);
@@ -106,7 +107,8 @@ export function useGameState({
     setGameStatus('playing');
     timeLeftRef.current = 60;
     timerEndAtRef.current = null;
-    timerResetCountRef.current = 0;
+    turnStartedAtRef.current = remoteState.turnStartedAt ?? null;
+    setTimerResetCount(0);
     setIsDemoMode(false);
     setHistoryStates([]);
     setHalfMoveClock(0);
@@ -134,7 +136,7 @@ export function useGameState({
   // - Timeout: setGameStatus ngay, không qua useState intermediary
   const timeLeftRef = useRef(60);
   const timerEndAtRef = useRef(null);
-  const timerResetCountRef = useRef(0); // tăng mỗi khi cần reset timer
+  const turnStartedAtRef   = useRef(null); // server timestamp khi lượt mới bắt đầu — sync giữa 2 client
 
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -142,7 +144,16 @@ export function useGameState({
 
     // Luôn tạo endAt mới khi effect chạy (do currentTurn đổi hoặc reset)
     // Dùng timeLeftRef.current = 60 đã được set trước đó
-    timerEndAtRef.current = Date.now() + (timeLeftRef.current * 1000);
+    if (turnStartedAtRef.current) {
+      const elapsed = Date.now() - turnStartedAtRef.current;
+      const remaining = Math.max(60000 - elapsed, 0);
+      timeLeftRef.current = Math.ceil(remaining / 1000);
+      timerEndAtRef.current = Date.now() + remaining;
+    } else {
+      timeLeftRef.current = 60;
+      timerEndAtRef.current = Date.now() + 60000;
+    }
+    turnStartedAtRef.current = null; // consumed
 
     const tick = () => {
       const remainMs = timerEndAtRef.current - Date.now();
@@ -193,7 +204,7 @@ export function useGameState({
     tick(); // render ngay
     timerRef.current = setInterval(tick, 250);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [currentTurn, gameStatus, isDemoMode, isWaitingForOpponent, timerResetCountRef.current]); // eslint-disable-line
+  }, [currentTurn, gameStatus, isDemoMode, isWaitingForOpponent, timerResetCount]); // eslint-disable-line
 
   // ── INTERACTION ────────────────────────────────────────────────────────────
   // B4 FIX: xóa tham số isWaitingForOpponent khỏi signature
@@ -307,7 +318,7 @@ export function useGameState({
       // Reset timer sau mỗi nước đi — tăng resetCount để trigger useEffect
       timeLeftRef.current = 60;
       timerEndAtRef.current = null;
-      timerResetCountRef.current += 1;
+      setTimerResetCount(c => c + 1);
       setTimeLeft(60);
 
       // Game end check
@@ -325,6 +336,7 @@ export function useGameState({
         lastMove:       newLastMove,
         capturedPieces: newCaptured,
         historyStates:  nextHistoryStates,
+          turnStartedAt:  Date.now(),
       });
 
     } else {
@@ -353,7 +365,8 @@ export function useGameState({
     setMovedPieceId(null);
     timeLeftRef.current = 60;
     timerEndAtRef.current = null;
-    timerResetCountRef.current = 0;
+    turnStartedAtRef.current = remoteState.turnStartedAt ?? null;
+    setTimerResetCount(c => c + 1);
     setTimeLeft(60);
 
     // Chạy checkGameStatus sau khi apply remote state

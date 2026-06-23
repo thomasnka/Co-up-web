@@ -84,7 +84,15 @@ export default function GameBoard({
     registerTimerDisplay,
   } = game;
 
-  // BUG-4 FIX: sync localDemoMode khi game.isDemoMode thay đổi
+  // Auto-activate demo mode khi gameMode prop = 'demo' (từ URL ?demo=1)
+  useEffect(() => {
+    if (gameMode === 'demo' && !isDemoMode) {
+      activateDemo();
+      setLocalDemoMode(true);
+    }
+  }, [gameMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // BUG-4 FIX: sync localDemoMode khi game.isDemoMode thay đổi
   useEffect(() => { setLocalDemoMode(isDemoMode); }, [isDemoMode]);
 
   // Flash timer + play sound khi game chuyển sang playing

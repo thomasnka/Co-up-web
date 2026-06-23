@@ -455,11 +455,11 @@ export default function GameBoard({
           </button>
           {!isSpectator && (
             <>
-              <button onClick={handleDraw} disabled={gameStatus !== 'playing'}
+              <button onClick={() => { if (isWaitingForOpponent) return; handleDraw(); }} disabled={gameStatus !== 'playing'}
                 style={{ flex: 2, padding: '10px 0', border: 'none', borderRadius: '6px', backgroundColor: gameStatus !== 'playing' ? (isNightMode ? '#444' : '#bbb') : '#757575', color: '#fff', fontWeight: 'bold', cursor: gameStatus !== 'playing' ? 'not-allowed' : 'pointer', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
                 🤝 Cầu hòa
               </button>
-              <button onClick={() => handleResign(currentTurn)} disabled={gameStatus !== 'playing'}
+              <button onClick={() => { if (isWaitingForOpponent) return; handleResign(currentTurn); }} disabled={gameStatus !== 'playing'}
                 style={{ flex: 2, padding: '10px 0', border: 'none', borderRadius: '6px', backgroundColor: gameStatus !== 'playing' ? (isNightMode ? '#444' : '#bbb') : '#d32f2f', color: '#fff', fontWeight: 'bold', cursor: gameStatus !== 'playing' ? 'not-allowed' : 'pointer', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
                 🏳️ Nhận thua
               </button>

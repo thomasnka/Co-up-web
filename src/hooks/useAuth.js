@@ -85,6 +85,8 @@ export function useAuth() {
           }, { onConflict: 'id', ignoreDuplicates: false });
 
           await fetchProfile(currentUser.id);
+          // Retry sau 1s để fix Google login race condition
+          setTimeout(() => { if (mounted) fetchProfile(currentUser.id); }, 1000);
         }
 
         if (event === 'SIGNED_OUT') {

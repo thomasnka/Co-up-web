@@ -178,8 +178,16 @@ export function useAuth() {
 
   const playerId   = user?.id    ?? GUEST_ID;
   const playerName = profile?.display_name ?? playerId;
-  const playerElo  = profile?.elo          ?? 1500;
+  const _storedGuestElo = !user ? parseInt(localStorage.getItem('xq.guestElo') || '1500', 10) : 1500;
+const playerElo = profile?.elo ?? _storedGuestElo;
   const isLoggedIn = user !== null;
+
+  // C5: cap nhat ELO guest vao localStorage (chi khi chua login)
+  const updateGuestElo = (newElo) => {
+    if (!user && typeof newElo === 'number' && newElo > 0) {
+      localStorage.setItem('xq.guestElo', String(newElo));
+    }
+  };
 
   return {
     user,
@@ -192,5 +200,6 @@ export function useAuth() {
     loginWithGoogle,
     loginWithFacebook,
     logout,
+    updateGuestElo,
   };
 }

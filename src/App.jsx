@@ -47,7 +47,8 @@ export default function App() {
           playerId={auth.playerId}
           playerName={auth.playerName}
           playerElo={auth.playerElo}
-          isNightMode={isNightMode}
+                updateGuestElo={auth.updateGuestElo}
+                isNightMode={isNightMode}
           setIsNightMode={setIsNightMode}
         />
       )}

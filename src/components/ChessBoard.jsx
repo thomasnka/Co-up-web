@@ -71,9 +71,9 @@ export default function ChessBoard({
           <stop offset="100%" stopColor="#e8d89a" />
         </radialGradient>
         <radialGradient id="piece-hidden-day" cx="38%" cy="32%" r="62%">
-          <stop offset="0%"   stopColor="#f0e8d5" />
-          <stop offset="50%"  stopColor="#d8c89a" />
-          <stop offset="100%" stopColor="#b8a070" />
+          <stop offset="0%"   stopColor="#c8a46a" />
+          <stop offset="55%"  stopColor="#a07838" />
+          <stop offset="100%" stopColor="#6a4a10" />
         </radialGradient>
 
         {/* ── PIECE GRADIENTS (Night) — sáng hơn để thấy 3D effect ── */}
@@ -88,9 +88,9 @@ export default function ChessBoard({
           <stop offset="100%" stopColor="#302820" />
         </radialGradient>
         <radialGradient id="piece-hidden-night" cx="38%" cy="32%" r="62%">
-          <stop offset="0%"   stopColor="#5a5045" />
-          <stop offset="50%"  stopColor="#352e25" />
-          <stop offset="100%" stopColor="#1e1a14" />
+          <stop offset="0%"   stopColor="#9a7848" />
+          <stop offset="55%"  stopColor="#6a4a18" />
+          <stop offset="100%" stopColor="#3a2808" />
         </radialGradient>
 
         {/* ── BOARD TEXTURE OVERLAY ─────────────────────────────── */}
@@ -296,24 +296,31 @@ export default function ChessBoard({
               {/* Piece content */}
               {p.isHidden ? (
                 <>
-                  {/* Hidden piece pattern — subtle texture */}
-                  <text
-                    x={cx} y={cy + 3}
-                    textAnchor="middle" dominantBaseline="middle"
-                    fontSize="28" fontWeight="400"
-                    fill={isDay ? 'rgba(120,90,40,0.35)' : 'rgba(180,140,60,0.25)'}
-                    style={{ fontFamily: 'serif', userSelect: 'none' }}
-                    transform={isFlipped ? `rotate(180, ${cx}, ${cy + 3})` : undefined}
-                  >囲</text>
-                  {/* Cross mark indicating unknown */}
-                  <line x1={cx-10} y1={cy-10} x2={cx+10} y2={cy+10}
-                    stroke={isDay ? 'rgba(120,90,40,0.2)' : 'rgba(180,140,60,0.15)'}
-                    strokeWidth="1.5" strokeLinecap="round"
-                  />
-                  <line x1={cx+10} y1={cy-10} x2={cx-10} y2={cy+10}
-                    stroke={isDay ? 'rgba(120,90,40,0.2)' : 'rgba(180,140,60,0.15)'}
-                    strokeWidth="1.5" strokeLinecap="round"
-                  />
+                  {/* A1 — Mặt lưng gỗ: vân đồng tâm, không chữ */}
+              <circle
+                cx={cx} cy={cy}
+                r={r * 0.82}
+                fill={isDay ? 'rgba(100,65,15,0.18)' : 'rgba(60,35,5,0.25)'}
+              />
+              <circle
+                cx={cx} cy={cy}
+                r={r * 0.60}
+                fill="none"
+                stroke={isDay ? 'rgba(120,75,18,0.45)' : 'rgba(80,48,10,0.4)'}
+                strokeWidth="1.8"
+              />
+              <circle
+                cx={cx} cy={cy}
+                r={r * 0.38}
+                fill="none"
+                stroke={isDay ? 'rgba(120,75,18,0.35)' : 'rgba(80,48,10,0.32)'}
+                strokeWidth="1.4"
+              />
+              <circle
+                cx={cx} cy={cy}
+                r={r * 0.16}
+                fill={isDay ? 'rgba(90,55,10,0.4)' : 'rgba(55,32,5,0.45)'}
+              />
                 </>
               ) : (
                 <text

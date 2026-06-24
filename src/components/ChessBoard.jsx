@@ -299,26 +299,26 @@ export default function ChessBoard({
                   {/* A1 — Mặt lưng gỗ: vân đồng tâm, không chữ */}
               <circle
                 cx={cx} cy={cy}
-                r={r * 0.82}
+                r={36}
                 fill={isDay ? 'rgba(100,65,15,0.18)' : 'rgba(60,35,5,0.25)'}
               />
               <circle
                 cx={cx} cy={cy}
-                r={r * 0.60}
+                r={26}
                 fill="none"
                 stroke={isDay ? 'rgba(120,75,18,0.45)' : 'rgba(80,48,10,0.4)'}
                 strokeWidth="1.8"
               />
               <circle
                 cx={cx} cy={cy}
-                r={r * 0.38}
+                r={17}
                 fill="none"
                 stroke={isDay ? 'rgba(120,75,18,0.35)' : 'rgba(80,48,10,0.32)'}
                 strokeWidth="1.4"
               />
               <circle
                 cx={cx} cy={cy}
-                r={r * 0.16}
+                r={7}
                 fill={isDay ? 'rgba(90,55,10,0.4)' : 'rgba(55,32,5,0.45)'}
               />
                 </>

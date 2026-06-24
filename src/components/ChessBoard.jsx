@@ -78,14 +78,14 @@ export default function ChessBoard({
 
         {/* ── PIECE GRADIENTS (Night) — sáng hơn để thấy 3D effect ── */}
         <radialGradient id="piece-bg-night" cx="38%" cy="32%" r="62%">
-          <stop offset="0%"   stopColor="#6a6055" />
-          <stop offset="55%"  stopColor="#3e3830" />
-          <stop offset="100%" stopColor="#252018" />
+          <stop offset="0%"   stopColor="#8a7860" />
+          <stop offset="55%"  stopColor="#5a4830" />
+          <stop offset="100%" stopColor="#2e2015" />
         </radialGradient>
         <radialGradient id="piece-bg-night-selected" cx="38%" cy="32%" r="62%">
-          <stop offset="0%"   stopColor="#7a7060" />
-          <stop offset="55%"  stopColor="#504840" />
-          <stop offset="100%" stopColor="#302820" />
+          <stop offset="0%"   stopColor="#a09070" />
+          <stop offset="55%"  stopColor="#70603a" />
+          <stop offset="100%" stopColor="#3c2c18" />
         </radialGradient>
         <radialGradient id="piece-hidden-night" cx="38%" cy="32%" r="62%">
           <stop offset="0%"   stopColor="#9a7848" />
@@ -284,6 +284,12 @@ export default function ChessBoard({
                 fill={p.isHidden ? hiddenGrad : bgGrad}
                 stroke={outerStroke}
                 strokeWidth={outerWidth}
+              />
+              {/* Bevel ring — đường viền đậm sát mép ngoài, tạo cảm giác nặng */}
+              <circle cx={cx} cy={cy} r={outerR - 3}
+                fill="none"
+                stroke={isDay ? 'rgba(60,35,5,0.55)' : 'rgba(20,10,0,0.7)'}
+                strokeWidth="2.5"
               />
 
               {/* Inner ring — bevel effect */}

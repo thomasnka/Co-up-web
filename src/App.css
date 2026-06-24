@@ -100,12 +100,15 @@ svg {
 /* — F4: PIECE FLIP — opacity fade, works correctly with SVG <g> ————————— */
 @keyframes piece-flip {
   0%   { opacity: 1; }
+  40%  { opacity: 0; }
+  100% { opacity: 1; }
+}
   35%  { opacity: 0; }
   65%  { opacity: 0; }
   100% { opacity: 1; }
 }
 .piece-flip {
-  animation: piece-flip 320ms ease-in-out forwards;
+  animation: piece-flip 260ms cubic-bezier(0.4, 0, 1, 1) forwards;
 }
 /* ── F5: PIECE ENTER (di chuyển đến ô mới) ───────────────────────────────── */
 @keyframes piece-enter {

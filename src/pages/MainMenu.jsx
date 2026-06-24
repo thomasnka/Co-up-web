@@ -177,10 +177,7 @@ export default function MainMenu({ setScreen, setGameMode, setMatchId, theme, au
       <h1 style={{ fontSize: '3rem', margin: '0 0 5px 0', textAlign: 'center' }}>
         CỜ ÚP <span style={{ color: theme.redText }}>PRO</span>
       </h1>
-        {/* Demo note */}
-        <div style={{display:'inline-flex',alignItems:'center',gap:'8px',fontSize:'0.78rem',color:'#888',border:'1px dashed #bbb',borderRadius:'6px',padding:'4px 14px',marginTop:'8px'}}>
-          🎮 Muốn chơi demo thì vào URL thêm <strong>?demo=1</strong>
-        </div>
+      {/* NOTE FOR DEVS: Để chơi demo, vào URL thêm ?demo=1 (chơi 2 bên local, không tính ELO) */}
       <p style={{ margin: '0 0 30px 0', opacity: 0.8, fontSize: '1.05rem', textAlign: 'center', lineHeight: '1.7' }}>
         Lạc nước hai Xe đành bỏ phí.<br/>Gặp thời một Tốt cũng thành công!
       </p>

@@ -178,7 +178,7 @@ export function useGameState({
 
       // Update DOM trực tiếp — không setState
       const el = timerDisplayRefsRef.current?.get(currentTurn);
-      if (el) {
+      if (el && document.contains(el)) {
         el.textContent = text;
         // Alert strict < 10s
         if (remainMs < 10_000) {

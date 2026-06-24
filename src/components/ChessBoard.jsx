@@ -293,16 +293,6 @@ export default function ChessBoard({
                 strokeWidth={innerWidth}
                 opacity="0.7"
               />
-
-              {/* Highlight spot — subtle top-left glow, không oval rõ */}
-              <circle
-                cx={cx - 8} cy={cy - 10}
-                r="16"
-                fill={isDay
-                  ? 'rgba(255,255,255,0.22)'
-                  : 'rgba(255,255,255,0.10)'}
-              />
-
               {/* Piece content */}
               {p.isHidden ? (
                 <>

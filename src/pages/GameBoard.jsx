@@ -81,7 +81,6 @@ export default function GameBoard({
     validMoves, movedPieceId, lastMoveSound,
     initGame, handleInteraction, handleDraw, handleResign,
     formatTime, activateDemo, getResultMessage, acceptDraw, isDemoMode,
-    registerTimerDisplay,
   } = game;
 
   // Auto-activate demo mode khi gameMode prop = 'demo' (từ URL ?demo=1)
@@ -349,16 +348,6 @@ export default function GameBoard({
             </div>
             <div
               className={`timer-badge${timerFlash ? ' timer-game-start' : ''}`}
-              ref={el => {
-                registerTimerDisplay?.('black', el);
-                // Lưu màu inactive vào dataset để DOM update dùng đúng màu
-                if (el) {
-                  el.dataset.activeBg = '#4CAF50';
-                  el.dataset.inactiveBg = isNightMode ? '#333' : '#ddd';
-                  el.dataset.activeColor = '#fff';
-                  el.dataset.inactiveColor = isNightMode ? '#aaa' : '#555';
-                }
-              }}
               style={{
                 flexShrink: 0,
                 backgroundColor: currentTurn === 'black' ? '#4CAF50' : (isNightMode ? '#333' : '#ddd'),
@@ -430,15 +419,6 @@ export default function GameBoard({
             </div>
             <div
               className={`timer-badge${timerFlash ? ' timer-game-start' : ''}`}
-              ref={el => {
-                registerTimerDisplay?.('red', el);
-                if (el) {
-                  el.dataset.activeBg = '#4CAF50';
-                  el.dataset.inactiveBg = isNightMode ? '#333' : '#ddd';
-                  el.dataset.activeColor = '#fff';
-                  el.dataset.inactiveColor = isNightMode ? '#aaa' : '#555';
-                }
-              }}
               style={{
                 flexShrink: 0,
                 backgroundColor: currentTurn === 'red' ? '#4CAF50' : (isNightMode ? '#333' : '#ddd'),

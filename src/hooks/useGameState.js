@@ -90,8 +90,6 @@ export function useGameState({
 
   const timerRef = useRef(null);
   const currentTurnRef = useRef('red'); // tránh stale closure trong timer tick
-  // P1: ref cho DOM timer display — update trực tiếp, không trigger re-render
-  const timerDisplayRefsRef = useRef(new Map()); // color → DOM element ref
 
   // ── INIT ───────────────────────────────────────────────────────────────────
   const initGame = useCallback(() => {
@@ -177,21 +175,6 @@ export function useGameState({
       const text = pad(m) + ':' + pad(s);
 
       // Update DOM trực tiếp — không setState
-      const el = timerDisplayRefsRef.current?.get(currentTurn);
-      if (el && document.contains(el)) {
-        el.textContent = text;
-        // Alert strict < 10s
-        if (remainMs < 10_000) {
-          el.style.backgroundColor = '#d32f2f';
-          el.style.color = '#fff';
-          el.style.border = '2px solid #b71c1c';
-        } else {
-          // Dùng dataset colors từ GameBoard để đúng theme/nightmode
-          el.style.backgroundColor = el.dataset.activeBg || '#4CAF50';
-          el.style.color = el.dataset.activeColor || '#fff';
-          el.style.border = `2px solid #2e7d32`;
-        }
-      }
     };
 
     tick(); // render ngay
@@ -395,11 +378,6 @@ export function useGameState({
   };
 
   // P1: đăng ký DOM element để timer update trực tiếp
-  const registerTimerDisplay = useCallback((color, el) => {
-    if (el) timerDisplayRefsRef.current.set(color, el);
-    else timerDisplayRefsRef.current.delete(color);
-  }, []);
-
   const formatTime = (seconds) => {
     const s = Math.max(0, seconds || 0);
     const m = Math.floor(s / 60);
@@ -476,6 +454,5 @@ export function useGameState({
     // Utilities
     formatTime,
     getResultMessage,
-    registerTimerDisplay, // P1: đăng ký DOM ref cho timer
   };
 }

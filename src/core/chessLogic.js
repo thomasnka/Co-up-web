@@ -284,7 +284,7 @@ export const hasValidMoves = (pieces, color, historyStates = []) => {
 };
 
 export const checkGameStatus = (pieces, turnColor, halfMoveClock, historyStates = []) => {
-  if (halfMoveClock >= 100) return 'draw_50';
+  if (halfMoveClock >= 64) return 'draw_50'; // C3: Cờ úp dùng 64 thay vì 100 (ít quân hơn)
 
   // B2: chỉ tuyên bố draw_material khi TẤT CẢ quân đã lật ngửa
   const allRevealed = pieces.every(p => !p.isHidden);

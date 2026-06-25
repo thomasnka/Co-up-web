@@ -444,6 +444,11 @@ export class GameRoom {
         ws.send(JSON.stringify({ type: 'pong' }));
         break;
       }
+        case 'pong': {
+          const sessionP = this.sessions.get(playerId);
+          if (sessionP) sessionP.lastPong = Date.now();
+          break;
+        }
 
       default:
         ws.send(JSON.stringify({ type: 'error', message: `Unknown message type: ${msg.type}` }));

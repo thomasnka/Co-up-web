@@ -410,7 +410,7 @@ export default function GameBoard({
               <div style={{ width: '12px', height: '12px', flexShrink: 0, borderRadius: '50%', backgroundColor: currentTurn === 'red' ? '#4CAF50' : '#888', border: `2px solid ${theme.lines}` }} />
               <span style={{ fontWeight: 'bold', color: theme.redText, fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {myDisplayName}
-                <span style={{ fontSize: '0.8rem', opacity: 0.7 }}> ({playerElo})</span>
+            {playerElo !== null && <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>({playerElo})</span>}
                 {/* Hiển thị màu sau tên */}
                 {myColor && <span style={{ marginLeft: '6px', fontSize: '0.75rem', fontWeight: 'bold', color: effectiveMyColor === 'red' ? theme.redText : theme.blackText }}>
                   [{effectiveMyColor === 'red' ? 'Đỏ' : 'Đen'}]

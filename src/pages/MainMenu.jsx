@@ -209,7 +209,7 @@ export default function MainMenu({ setScreen, setGameMode, setMatchId, theme, au
           <div style={{ fontSize: '0.8rem', opacity: 0.7, marginTop: '5px', fontWeight: 'normal' }}>Lật màu ngẫu nhiên (Không tính ELO)</div>
           </button>
         {/* History button - only for logged-in users */}
-        {auth && auth.userId && (
+        {auth && auth.userId && auth.playerElo !== null && (
           <button
             onClick={() => setScreen("history")}
             style={{ ...menuBtnStyle(theme), width: "280px", backgroundColor: isNightMode ? "#2d3a5a" : "#e8e0d0", color: isNightMode ? "#ccd" : "#444", marginTop: "6px" }}

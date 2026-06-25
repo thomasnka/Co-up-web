@@ -207,7 +207,16 @@ export default function MainMenu({ setScreen, setGameMode, setMatchId, theme, au
         >
           Tạo phòng Cải Tiến
           <div style={{ fontSize: '0.8rem', opacity: 0.7, marginTop: '5px', fontWeight: 'normal' }}>Lật màu ngẫu nhiên (Không tính ELO)</div>
-        </button>
+          </button>
+        {/* History button - only for logged-in users */}
+        {auth && auth.userId && (
+          <button
+            onClick={() => setScreen("history")}
+            style={{ ...menuBtnStyle(theme), width: "280px", backgroundColor: isNightMode ? "#2d3a5a" : "#e8e0d0", color: isNightMode ? "#ccd" : "#444", marginTop: "6px" }}
+          >
+            📋 Lịch sử trận đấu
+          </button>
+        )}
       </div>
 
       {/* Main grid */}

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { THEMES } from './constants/themes';
 import MainMenu from './pages/MainMenu';
+import MatchHistory from './pages/MatchHistory';
 import GameBoard from './pages/GameBoard';
 import './App.css';
 
@@ -28,7 +29,14 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: theme.background, transition: 'all 0.3s ease', fontFamily: 'sans-serif' }}>
-      {screen === 'menu' ? (
+      {screen === 'history' ? (
+        <MatchHistory
+          auth={auth}
+          theme={theme}
+          isNightMode={isNightMode}
+          setScreen={setScreen}
+        />
+      ) : screen === 'menu' ? (
         <MainMenu
           setScreen={setScreen}
           setGameMode={setGameMode}

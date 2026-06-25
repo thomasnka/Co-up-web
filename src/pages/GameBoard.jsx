@@ -281,7 +281,7 @@ export default function GameBoard({
   const oppElo = matchData?.host_id === playerId ? matchData?.guest_elo : matchData?.host_elo;
 
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px', padding: '10px', minHeight: '100vh', width: '100%', boxSizing: 'border-box', position: 'relative' }}>
+    <div style={{ display: 'flex', flexDirection: window.innerWidth <= 768 ? 'column' : 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: window.innerWidth <= 768 ? 'center' : 'flex-start', gap: window.innerWidth <= 768 ? '10px' : '20px', padding: window.innerWidth <= 768 ? '6px' : '10px', minHeight: '100vh', width: '100%', boxSizing: 'border-box', position: 'relative' }}>
 
       {gameStatus !== 'playing' && result && (
         <ResultOverlay
@@ -465,7 +465,7 @@ export default function GameBoard({
       </div>
 
       {/* Cot 2: Chat + Bien ban */}
-      <div className="side-panel" style={{ width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+      <div className="side-panel" style={{ width: '100%', maxWidth: window.innerWidth <= 768 ? '100%' : '320px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
 
 
         {/* Chat box — hiển thị khi showChat=true, nằm trên biên bản */}

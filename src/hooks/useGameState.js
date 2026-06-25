@@ -233,6 +233,8 @@ export function useGameState({
           : p
       );
 
+    // INVARIANT: dedup pieces by id (prevent ghost pieces bug)
+    { const _seen=new Set(); nextPieces=nextPieces.filter(p=>{if(_seen.has(p.id)){console.error("[board] dup piece id="+p.id+" type="+p.type);return false;}_seen.add(p.id);return true;}); }
       const nextTurnColor     = currentTurn === 'red' ? 'black' : 'red';
       const newHash           = getBoardHash(nextPieces, nextTurnColor);
       const nextHistoryStates = [...historyStates, newHash];

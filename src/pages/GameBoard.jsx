@@ -11,7 +11,6 @@ import DrawBanner from '../components/DrawBanner';
 export default function GameBoard({
   gameMode, setScreen, theme, matchId,
   playerId, playerName, playerElo,
-  updateGuestElo,
   isNightMode, setIsNightMode,
 }) {
   const gameRef = useRef(null);
@@ -280,11 +279,6 @@ export default function GameBoard({
     ? (matchData?.guest_name || (isDemoMode ? 'Tự chơi 2 bên' : 'Đang chờ...'))
     : (matchData?.host_name  || (isDemoMode ? 'Tự chơi 2 bên' : 'Đang chờ...'));
   const oppElo = matchData?.host_id === playerId ? matchData?.guest_elo : matchData?.host_elo;
-  // C5: khi match ket thuc, luu ELO moi cho guest
-  const myNewElo = matchData?.host_id === playerId ? matchData?.host_elo : matchData?.guest_elo;
-  if (matchData?.status === 'finished' && myNewElo && updateGuestElo) {
-    updateGuestElo(myNewElo);
-  }
 
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px', padding: '10px', minHeight: '100vh', width: '100%', boxSizing: 'border-box', position: 'relative' }}>

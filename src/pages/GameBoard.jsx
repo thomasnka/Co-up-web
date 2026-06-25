@@ -69,7 +69,7 @@ export default function GameBoard({
       return getIsMyTurn(turn);
     },
     onMoveMade:    (s) => { if (matchId && !isSpectator) syncMove(s); },
-    onGameEnd:     (s) => { if (matchId && !isSpectator) syncResult(s); },
+    onGameEnd:      (s) => { if (matchId && !isSpectator) syncResult(s, gameRef.current?.historyLog); },
     onDrawRequest: matchId ? handleOnDrawRequest : null,
   });
 

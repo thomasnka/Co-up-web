@@ -329,7 +329,7 @@ export function useMultiplayer({
   // ── SYNC RESULT (Supabase HTTP — game end) ────────────────────────────────
   // Supabase trigger sẽ tự tính ELO sau khi status = 'finished'
   // Cả 2 client đều gọi — idempotent do PATCH chỉ update 1 row
-  const syncResult = useCallback(async (gameStatus) => {
+  const syncResult = useCallback(async (gameStatus, moveLog) => {
     if (!matchId || isSpectator) return { error: null };
 
     const winnerMap = {
@@ -349,7 +349,7 @@ export function useMultiplayer({
     try {
       const { error } = await supabase
         .from('matches')
-        .update({ status: 'finished', winner, game_status: gameStatus })
+        .update({ status: 'finished', winner, game_status: gameStatus, move_log: moveLog ?? [] })
         .eq('id', matchId);
       if (error) console.error('[useMultiplayer] syncResult Supabase error:', error.message);
       return { error };

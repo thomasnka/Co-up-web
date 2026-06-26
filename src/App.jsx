@@ -10,6 +10,17 @@ import './App.css';
 
 export default function App() {
   const [screen, setScreen]           = useState('menu');
+
+  // SPA pageview tracking for GA4
+  React.useEffect(() => {
+    if (typeof window.gtag === 'function') {
+      const pageMap = { menu: '/', playing: '/game', history: '/history' };
+      window.gtag('event', 'page_view', {
+        page_path: pageMap[screen] || '/' + screen,
+        page_title: document.title,
+      });
+    }
+  }, [screen]); // eslint-disable-line react-hooks/exhaustive-deps
   const [gameMode, setGameMode]       = useState('standard');
   const [isNightMode, setIsNightMode] = useState(false);
   const [matchId, setMatchId]         = useState(null);

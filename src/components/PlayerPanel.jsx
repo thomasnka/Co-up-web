@@ -66,9 +66,7 @@ export default function PlayerPanel({ auth, theme, isNightMode, setIsNightMode }
           <span style={{ fontSize: '0.85rem', opacity: 0.6, color: theme.textColor }}>
             {playerName}
           </span>
-          <span style={{ fontSize: '0.8rem', color: theme.redText, fontWeight: 'bold', whiteSpace: 'nowrap' }}>
-            · Đăng nhập để lưu ELO
-          </span>
+          
           <button
             onClick={loginWithGoogle}
             style={{

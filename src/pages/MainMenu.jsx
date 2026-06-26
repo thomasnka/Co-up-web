@@ -276,7 +276,19 @@ export default function MainMenu({ setScreen, setGameMode, setMatchId, theme, au
             © 2026 Cờ Úp Pro. All rights reserved.
           </div>
         </div>
-      </footer>
+      
+          <div style={{ marginTop: '30px', borderTop: '1px solid #444', paddingTop: '20px' }}>
+            <p style={{ color: '#cccccc', fontSize: '14px', lineHeight: '1.8', marginBottom: '16px' }}>
+              Cờ úp online đang ngày càng trở thành món ăn tinh thần không thể thiếu đối với những người đam mê bộ môn thể thao trí tuệ. Thay vì phải tìm kiếm đối thủ ngoài đời thực hay chuẩn bị bàn cờ cồng kềnh, bạn hoàn toàn có thể thỏa mãn đam mê ngay trên trình duyệt web của mình. Trải nghiệm chơi cờ úp trực tuyến mang lại sự tiện lợi tuyệt đối, giúp bạn dễ dàng kết nối, giao lưu và tranh tài cùng hàng ngàn kỳ thủ từ khắp mọi miền đất nước bất cứ lúc nào.
+            </p>
+            <p style={{ color: '#cccccc', fontSize: '14px', lineHeight: '1.8', marginBottom: '16px' }}>
+              Khác biệt lớn nhất làm nên sức hút mãnh liệt của game cờ úp so với bộ môn cờ tướng truyền thống chính là yếu tố bất ngờ và tính biến hóa khôn lường trong từng nước đi. Ở giai đoạn khai cuộc, ngoại trừ hai quân Tướng lộ diện, toàn bộ các quân cờ khác đều được che giấu và xáo trộn ngẫu nhiên. Điều này đòi hỏi người chơi không chỉ cần có một nền tảng chiến thuật vững chắc mà còn phải sở hữu tư duy tùy cơ ứng biến nhạy bén trước những tình huống lật quân đầy may rủi.
+            </p>
+            <p style={{ color: '#cccccc', fontSize: '14px', lineHeight: '1.8' }}>
+              Đến với hệ thống Cờ Úp Pro, bạn sẽ được đắm chìm trong không gian giải trí đỉnh cao cùng cộng đồng người đam mê cờ úp 2 người vô cùng đông đảo. Nền tảng hoàn toàn miễn phí và không yêu cầu cài đặt phần mềm. Hãy tạo tài khoản và đăng nhập ngay hôm nay để kích hoạt hệ thống lưu điểm ELO, ghép đôi tự động với đối thủ xứng tầm và khẳng định đẳng cấp trên bảng xếp hạng cao thủ.
+            </p>
+          </div>
+          </footer>
     </div>
   );
 }

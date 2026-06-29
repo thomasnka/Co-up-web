@@ -35,7 +35,7 @@ export default function ChessBoard({
     onCellClick(row, col);
   }, [onCellClick]);
 
-  const isDay = theme.board === '#e3c697';
+  const isDay = theme.board === '#f5deb3';
 
   return (
     <svg
@@ -250,13 +250,13 @@ export default function ChessBoard({
           const isFlipping    = flippingPieceId === p.id;
           const isValidTarget = validMovesSet.has(`${p.row}-${p.col}`);
 
-          const bgGrad     = p.color === 'red'
-          ? 'url(#piece-red)'
-          : 'url(#piece-black)';
+          const bgGrad    = p.isHidden
+          ? 'url(#piece-hidden)'
+          : p.color === 'red' ? 'url(#piece-red)' : 'url(#piece-black)';
           const hiddenGrad = p.color === 'red' ? theme.rimRed : theme.rimBlack;
 
-          const outerR     = 24;
-          const innerR     = 20;
+          const outerR     = 40;
+          const innerR     = 33;
           const outerStroke = isDay
             ? (isSelected ? '#c8a020' : isValidTarget ? '#b05030' : '#8a6828')
             : (isSelected ? '#d4a030' : isValidTarget ? '#c06040' : '#9a8848');  // sáng hơn
@@ -293,10 +293,10 @@ export default function ChessBoard({
 
               {/* Outer ring */}
               <circle cx={cx} cy={cy} r={outerR}
-                fill={bgGrad} stroke={p.isHidden ? hiddenGrad : 'none'} strokeWidth={p.isHidden ? 2 : 0}
-                stroke={outerStroke}
-                strokeWidth={outerWidth}
-              />
+                fill={bgGrad}
+                  stroke={p.isHidden ? hiddenGrad : outerStroke}
+                  strokeWidth={p.isHidden ? 2 : outerWidth}
+                />
               {/* Bevel ring — đường viền đậm sát mép ngoài, tạo cảm giác nặng */}
               <circle cx={cx} cy={cy} r={outerR - 3}
                 fill="none"

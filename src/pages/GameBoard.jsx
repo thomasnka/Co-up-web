@@ -9,7 +9,7 @@ import ResultOverlay from '../components/ResultOverlay';
 import DrawBanner from '../components/DrawBanner';
 
 export default function GameBoard({
-  gameMode, setScreen, theme, matchId,
+  gameMode, isDemo = false, setScreen, theme, matchId,
   playerId, playerName, playerElo,
   isNightMode, setIsNightMode,
 }) {
@@ -85,7 +85,7 @@ export default function GameBoard({
 
   // Auto-activate demo mode khi gameMode prop = 'demo' (từ URL ?demo=1)
   useEffect(() => {
-    if (gameMode === 'demo' && !isDemoMode) {
+    if ((isDemo || gameMode === 'demo') && !isDemoMode) {
       activateDemo();
       setLocalDemoMode(true);
     }

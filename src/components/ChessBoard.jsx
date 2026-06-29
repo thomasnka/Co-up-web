@@ -255,8 +255,8 @@ export default function ChessBoard({
           : p.color === 'red' ? 'url(#piece-red)' : 'url(#piece-black)';
           const hiddenGrad = p.color === 'red' ? theme.rimRed : theme.rimBlack;
 
-          const outerR     = 40;
-          const innerR     = 33;
+          const outerR     = 44;
+          const innerR     = 37;
           const outerStroke = isDay
             ? (isSelected ? '#c8a020' : isValidTarget ? '#b05030' : '#8a6828')
             : (isSelected ? '#d4a030' : isValidTarget ? '#c06040' : '#9a8848');  // sáng hơn
@@ -294,8 +294,8 @@ export default function ChessBoard({
               {/* Outer ring */}
               <circle cx={cx} cy={cy} r={outerR}
                 fill={bgGrad}
-                  stroke={p.isHidden ? hiddenGrad : outerStroke}
-                  strokeWidth={p.isHidden ? 2 : outerWidth}
+                  stroke={outerStroke}
+                  strokeWidth={outerWidth}
                 />
               {/* Bevel ring — đường viền đậm sát mép ngoài, tạo cảm giác nặng */}
               <circle cx={cx} cy={cy} r={outerR - 3}

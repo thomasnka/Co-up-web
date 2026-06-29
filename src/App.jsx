@@ -26,13 +26,14 @@ export default function App() {
   const [matchId, setMatchId]         = useState(null);
 
   const auth  = useAuth();
-  const isDemoUrl = new URLSearchParams(window.location.search).get('demo') === '1';
+  const demoParam  = new URLSearchParams(window.location.search).get('demo');
+  const isDemoUrl  = demoParam === '1' || demoParam === '2';
   // Auto-enter demo mode khi URL có ?demo=1
   React.useEffect(() => {
     if (isDemoUrl && screen === 'menu') {
       setScreen('playing');
       setMatchId(null);
-      setGameMode('demo');
+      setGameMode(demoParam === '2' ? 'innovative' : 'standard');
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -60,6 +61,7 @@ export default function App() {
       ) : (
         <GameBoard
           gameMode={gameMode}
+          isDemo={isDemoUrl}
           setScreen={setScreen}
           matchId={matchId}
           theme={theme}

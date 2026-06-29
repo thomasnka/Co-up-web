@@ -134,7 +134,9 @@ const countPiecesBetween = (pieces, startRow, startCol, endRow, endCol) => {
 // =============================================================================
 const checkBasicRules = (piece, targetRow, targetCol, allPieces) => {
   const targetPiece = getPieceAt(allPieces, targetRow, targetCol);
-  if (targetPiece && getEffectiveColor(targetPiece) === getEffectiveColor(piece)) return false;
+  // C: self-capture check — use actual .color (not positional getEffectiveColor)
+  // hidden pieces can still capture opponent's revealed pieces
+  if (targetPiece && targetPiece.color === piece.color) return false;
 
   const role = piece.isHidden ? piece.startingRole : piece.type;
   if (!role) {

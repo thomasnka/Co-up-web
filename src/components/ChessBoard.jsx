@@ -251,7 +251,7 @@ export default function ChessBoard({
           const isValidTarget = validMovesSet.has(`${p.row}-${p.col}`);
 
           const bgGrad    = p.isHidden
-          ? 'url(#piece-hidden)'
+          ? (isDay ? 'url(#piece-hidden-day)' : 'url(#piece-hidden-night)')
           : p.color === 'red' ? 'url(#piece-red)' : 'url(#piece-black)';
           const hiddenGrad = p.color === 'red' ? theme.rimRed : theme.rimBlack;
 

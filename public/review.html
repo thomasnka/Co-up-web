@@ -7,90 +7,123 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:sans-serif;display:flex;height:100vh;overflow:hidden;background:#f0f0f0}
-#sidebar{width:272px;min-width:272px;background:#1e1e2e;color:#cdd6f4;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:7px}
-#sidebar h1{font-size:13px;text-align:center;color:#cba6f7;padding:6px 0;border-bottom:1px solid #45475a;margin-bottom:2px}
+#sidebar{width:278px;min-width:278px;background:#1e1e2e;color:#cdd6f4;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px}
+#sidebar h1{font-size:13px;text-align:center;color:#cba6f7;padding:5px 0;border-bottom:1px solid #45475a;margin-bottom:2px}
 .sec{background:#313244;border-radius:7px;padding:7px 9px;display:flex;flex-direction:column;gap:5px}
 .sec h2{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#89b4fa;margin-bottom:1px}
-.row{display:flex;align-items:center;justify-content:space-between;gap:5px;font-size:11px}
-.row label{flex:1;color:#bac2de;min-width:80px}
-.row input[type=color]{width:34px;height:22px;border:none;border-radius:3px;cursor:pointer;padding:0;background:none}
+.row{display:flex;align-items:center;gap:5px;font-size:11px;min-height:22px}
+.row label{width:88px;flex-shrink:0;color:#bac2de;font-size:11px}
+.row input[type=color]{width:34px;height:21px;border:none;border-radius:3px;cursor:pointer;padding:0;background:none;flex-shrink:0}
 .row input[type=range]{flex:1;accent-color:#89b4fa;min-width:0}
 .row input[type=checkbox]{width:15px;height:15px;accent-color:#89b4fa;cursor:pointer;flex-shrink:0}
-.row span.val{width:38px;text-align:right;font-size:10px;color:#a6adc8;flex-shrink:0}
+.row input[type=text]{flex:1;background:#45475a;color:#cdd6f4;border:none;border-radius:4px;padding:2px 5px;font-size:11px;font-family:serif}
+.row span.val{width:36px;text-align:right;font-size:10px;color:#a6adc8;flex-shrink:0}
 .row select{flex:1;background:#45475a;color:#cdd6f4;border:none;border-radius:4px;padding:2px 4px;font-size:11px}
 .btn-row{display:flex;gap:7px;margin-top:2px}
 .btn{flex:1;padding:6px 4px;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:opacity .15s}
 .btn-p{background:#89b4fa;color:#1e1e2e}
 .btn-s{background:#45475a;color:#cdd6f4}
 .btn:hover{opacity:.82}
-#main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:background .3s;overflow:auto;padding:20px}
-#brd{display:block;max-width:100%;max-height:90vh}
-#bl{margin-top:10px;font-size:12px;color:#555;text-align:center}
+#main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:background .3s;overflow:auto;padding:16px}
+#brd{display:block;max-width:100%;max-height:calc(100vh - 60px)}
+#bl{margin-top:8px;font-size:12px;color:#555;text-align:center}
 </style>
 </head>
 <body>
 <div id="sidebar">
-  <h1>CoupPro Board Review</h1>
+  <h1>Board Review — Full Control</h1>
 
   <div class="sec">
     <h2>Board Background</h2>
     <div class="row"><label>Color</label><input type="color" id="bc" value="#f5deb3" oninput="db()"></div>
-    <div class="row"><label>Wood Texture</label><input type="checkbox" id="wt" onchange="db()"></div>
     <div class="row"><label>Dark Mode</label><input type="checkbox" id="dm" onchange="db()"></div>
   </div>
 
   <div class="sec">
     <h2>Grid Lines</h2>
     <div class="row"><label>Color</label><input type="color" id="lc" value="#8b5a2b" oninput="db()"></div>
-    <div class="row"><label>Opacity</label><input type="range" id="lo" min="10" max="100" value="40" oninput="sv('lv',this.value+'%');db()"><span class="val" id="lv">40%</span></div>
+    <div class="row"><label>Opacity %</label><input type="range" id="lo" min="5" max="100" value="40" oninput="sv('lv',this.value+'%');db()"><span class="val" id="lv">40%</span></div>
     <div class="row"><label>Thickness</label><input type="range" id="lt" min="5" max="30" value="10" oninput="sv('ltv',(this.value/10).toFixed(1)+'px');db()"><span class="val" id="ltv">1.0px</span></div>
   </div>
 
   <div class="sec">
     <h2>Board Frame</h2>
-    <div class="row"><label>Show Frame</label><input type="checkbox" id="sf" checked onchange="db()"></div>
-    <div class="row"><label>Frame Color</label><input type="color" id="fc" value="#8b6914" oninput="db()"></div>
-    <div class="row"><label>Frame Width</label><input type="range" id="fw" min="2" max="20" value="8" oninput="sv('fwv',this.value+'px');db()"><span class="val" id="fwv">8px</span></div>
+    <div class="row"><label>Show</label><input type="checkbox" id="sf" checked onchange="db()"></div>
+    <div class="row"><label>Color</label><input type="color" id="fc" value="#8b6914" oninput="db()"></div>
+    <div class="row"><label>Width</label><input type="range" id="fw" min="2" max="20" value="8" oninput="sv('fwv',this.value+'px');db()"><span class="val" id="fwv">8px</span></div>
   </div>
 
   <div class="sec">
-    <h2>River Text</h2>
-    <div class="row"><label>Show Text</label><input type="checkbox" id="rt" checked onchange="db()"></div>
+    <h2>River Text (楚河/漢界)</h2>
+    <div class="row"><label>Show</label><input type="checkbox" id="rt" checked onchange="db()"></div>
+    <div class="row"><label>Left text</label><input type="text" id="rtL" value="楚河" oninput="db()"></div>
+    <div class="row"><label>Right text</label><input type="text" id="rtR" value="漢界" oninput="db()"></div>
     <div class="row"><label>Color</label><input type="color" id="rc2" value="#8b5a2b" oninput="db()"></div>
-    <div class="row"><label>Opacity</label><input type="range" id="ro" min="10" max="100" value="40" oninput="sv('rov',this.value+'%');db()"><span class="val" id="rov">40%</span></div>
-    <div class="row"><label>Font Size</label><input type="range" id="rfs" min="8" max="22" value="13" oninput="sv('rfsv',this.value+'px');db()"><span class="val" id="rfsv">13px</span></div>
+    <div class="row"><label>Opacity %</label><input type="range" id="ro" min="5" max="100" value="40" oninput="sv('rov',this.value+'%');db()"><span class="val" id="rov">40%</span></div>
+    <div class="row"><label>Font size</label><input type="range" id="rfs" min="8" max="24" value="13" oninput="sv('rfsv',this.value+'px');db()"><span class="val" id="rfsv">13px</span></div>
   </div>
 
   <div class="sec">
-    <h2>Hidden Pieces (Rim)</h2>
-    <div class="row"><label>Side Color Rim</label><input type="checkbox" id="sr" checked onchange="db()"></div>
-    <div class="row"><label>Red Rim</label><input type="color" id="rrc" value="#c0392b" oninput="db()"></div>
-    <div class="row"><label>Black Rim</label><input type="color" id="brc" value="#222222" oninput="db()"></div>
-    <div class="row"><label>Rim Width</label><input type="range" id="rw" min="1" max="8" value="3" oninput="sv('rwv',this.value+'px');db()"><span class="val" id="rwv">3px</span></div>
-    <div class="row"><label>Show ? Mark</label><input type="checkbox" id="qm" checked onchange="db()"></div>
+    <h2>Red Pieces</h2>
+    <div class="row"><label>Grad bright</label><input type="color" id="rp1" value="#e8c060" oninput="db()"></div>
+    <div class="row"><label>Grad mid</label><input type="color" id="rp2" value="#a06828" oninput="db()"></div>
+    <div class="row"><label>Grad dark</label><input type="color" id="rp3" value="#3d2000" oninput="db()"></div>
+    <div class="row"><label>Text color</label><input type="color" id="rtc" value="#f8e17a" oninput="db()"></div>
+  </div>
+
+  <div class="sec">
+    <h2>Black Pieces</h2>
+    <div class="row"><label>Grad bright</label><input type="color" id="bp1" value="#606060" oninput="db()"></div>
+    <div class="row"><label>Grad mid</label><input type="color" id="bp2" value="#282828" oninput="db()"></div>
+    <div class="row"><label>Grad dark</label><input type="color" id="bp3" value="#000000" oninput="db()"></div>
+    <div class="row"><label>Text color</label><input type="color" id="btc" value="#e0e0e0" oninput="db()"></div>
+  </div>
+
+  <div class="sec">
+    <h2>Inner Ring</h2>
+    <div class="row"><label>Color</label><input type="color" id="irc" value="#ffd700" oninput="db()"></div>
+    <div class="row"><label>Opacity %</label><input type="range" id="iro" min="10" max="100" value="55" oninput="sv('irov',this.value+'%');db()"><span class="val" id="irov">55%</span></div>
+    <div class="row"><label>Thickness</label><input type="range" id="irt" min="5" max="30" value="15" oninput="sv('irtv',(this.value/10).toFixed(1)+'px');db()"><span class="val" id="irtv">1.5px</span></div>
+  </div>
+
+  <div class="sec">
+    <h2>Hidden Pieces</h2>
+    <div class="row"><label>Side rim</label><input type="checkbox" id="sr" checked onchange="db()"></div>
+    <div class="row"><label>Red rim</label><input type="color" id="rrc" value="#c0392b" oninput="db()"></div>
+    <div class="row"><label>Black rim</label><input type="color" id="brc" value="#222222" oninput="db()"></div>
+    <div class="row"><label>Rim width</label><input type="range" id="rw" min="1" max="10" value="3" oninput="sv('rwv',this.value+'px');db()"><span class="val" id="rwv">3px</span></div>
+    <div class="row"><label>? mark</label><input type="checkbox" id="qm" checked onchange="db()"></div>
+    <div class="row"><label>? color</label><input type="color" id="qc" value="#ffffff" oninput="db()"></div>
+    <div class="row"><label>? opacity %</label><input type="range" id="qo" min="10" max="100" value="65" oninput="sv('qov',this.value+'%');db()"><span class="val" id="qov">65%</span></div>
   </div>
 
   <div class="sec">
     <h2>Highlights</h2>
-    <div class="row"><label>Last Move</label><input type="checkbox" id="lm" checked onchange="db()"></div>
-    <div class="row"><label>Valid Moves</label><input type="checkbox" id="vm" checked onchange="db()"></div>
-    <div class="row"><label>Selected Glow</label><input type="checkbox" id="sg" checked onchange="db()"></div>
+    <div class="row"><label>Last move</label><input type="checkbox" id="lm" checked onchange="db()"></div>
+    <div class="row"><label>LM color</label><input type="color" id="lmc" value="#ffd200" oninput="db()"></div>
+    <div class="row"><label>LM opacity %</label><input type="range" id="lmo" min="10" max="80" value="32" oninput="sv('lmov',this.value+'%');db()"><span class="val" id="lmov">32%</span></div>
+    <div class="row"><label>Valid moves</label><input type="checkbox" id="vm" checked onchange="db()"></div>
+    <div class="row"><label>VM color</label><input type="color" id="vmc" value="#50c850" oninput="db()"></div>
+    <div class="row"><label>Selected glow</label><input type="checkbox" id="sg" checked onchange="db()"></div>
+    <div class="row"><label>Glow color</label><input type="color" id="sgc" value="#ffff50" oninput="db()"></div>
+    <div class="row"><label>Glow opacity %</label><input type="range" id="sgo" min="10" max="80" value="35" oninput="sv('sgov',this.value+'%');db()"><span class="val" id="sgov">35%</span></div>
   </div>
 
   <div class="sec">
     <h2>Piece Size</h2>
     <div class="row"><label>Outer R</label><input type="range" id="outerR" min="12" max="28" value="22" oninput="sv('orv',this.value+'px');db()"><span class="val" id="orv">22px</span></div>
-    <div class="row"><label>Inner R</label><input type="range" id="innerR" min="8" max="24" value="18" oninput="sv('irv',this.value+'px');db()"><span class="val" id="irv">18px</span></div>
+    <div class="row"><label>Inner R</label><input type="range" id="innerR" min="8" max="26" value="18" oninput="sv('irv',this.value+'px');db()"><span class="val" id="irv">18px</span></div>
   </div>
 
   <div class="sec">
-    <h2>Page BG</h2>
+    <h2>Page Background</h2>
     <div class="row"><label>Style</label>
       <select id="pb" onchange="db()">
         <option value="g">Gray</option>
-        <option value="d">Dark</option>
+        <option value="d">Dark Navy</option>
         <option value="r">Radial Gold</option>
         <option value="b">Bamboo Green</option>
+        <option value="w">White</option>
       </select>
     </div>
   </div>
@@ -101,12 +134,14 @@ body{font-family:sans-serif;display:flex;height:100vh;overflow:hidden;background
   </div>
 </div>
 <div id="main">
-  <svg id="brd" xmlns="http://www.w3.org/2000/svg" width="580" height="646" style="border-radius:6px;box-shadow:0 4px 20px rgba(0,0,0,0.25)"></svg>
+  <svg id="brd" xmlns="http://www.w3.org/2000/svg" width="580" height="646" style="border-radius:6px;box-shadow:0 4px 24px rgba(0,0,0,0.28)"></svg>
   <div id="bl">CoupPro Board Preview &mdash; <b id="cl" style="color:#e94560">Default</b></div>
 </div>
 <script>
 var SZ=60,PX=50,PY=53,COLS=9,ROWS=10,W=580,H=646;
 function gv(id){return document.getElementById(id);}
+function gval(id){return gv(id).value;}
+function gcb(id){return gv(id).checked;}
 function sv(id,v){var e=gv(id);if(e)e.textContent=v;}
 function px(c){return PX+c*SZ;}
 function py2(r){return PY+r*SZ;}
@@ -134,68 +169,87 @@ var VM=[{r:8,c:4},{r:9,c:3},{r:9,c:5}];
 
 function db(){
   var svg=gv('brd');
-  var bc=gv('bc').value;
-  var wt=gv('wt').checked;
-  var dm=gv('dm').checked;
-  var lc=gv('lc').value;
-  var lo=parseInt(gv('lo').value)/100;
-  var lt=parseFloat(gv('lt').value)/10;
-  var sf=gv('sf').checked;
-  var fc=gv('fc').value;
-  var fw=parseInt(gv('fw').value);
-  var rtOn=gv('rt').checked;
-  var rc2=gv('rc2').value;
-  var ro=parseInt(gv('ro').value)/100;
-  var rfs=parseInt(gv('rfs').value);
-  var sr=gv('sr').checked;
-  var rrc=gv('rrc').value;
-  var brc=gv('brc').value;
-  var rw=parseInt(gv('rw').value);
-  var qm=gv('qm').checked;
-  var lmOn=gv('lm').checked;
-  var vmOn=gv('vm').checked;
-  var sgOn=gv('sg').checked;
-  var outerR=parseInt(gv('outerR').value);
-  var innerR=parseInt(gv('innerR').value);
-  var pb=gv('pb').value;
+  var bc=gval('bc');
+  var dm=gcb('dm');
+  var lc=gval('lc');
+  var lo=parseInt(gval('lo'))/100;
+  var lt=parseFloat(gval('lt'))/10;
+  var sf=gcb('sf');
+  var fc=gval('fc');
+  var fw=parseInt(gval('fw'));
+  var rtOn=gcb('rt');
+  var rtLtxt=gval('rtL');
+  var rtRtxt=gval('rtR');
+  var rc2=gval('rc2');
+  var ro=parseInt(gval('ro'))/100;
+  var rfs=parseInt(gval('rfs'));
+  var rp1=gval('rp1'),rp2=gval('rp2'),rp3=gval('rp3'),rtc=gval('rtc');
+  var bp1=gval('bp1'),bp2=gval('bp2'),bp3=gval('bp3'),btc=gval('btc');
+  var irc=gval('irc');
+  var iro=parseInt(gval('iro'))/100;
+  var irt=parseFloat(gval('irt'))/10;
+  var sr=gcb('sr');
+  var rrc=gval('rrc'),brc=gval('brc');
+  var rw=parseInt(gval('rw'));
+  var qm=gcb('qm');
+  var qc=gval('qc');
+  var qo=parseInt(gval('qo'))/100;
+  var lmOn=gcb('lm');
+  var lmc=gval('lmc');
+  var lmo=parseInt(gval('lmo'))/100;
+  var vmOn=gcb('vm');
+  var vmc=gval('vmc');
+  var sgOn=gcb('sg');
+  var sgc=gval('sgc');
+  var sgo=parseInt(gval('sgo'))/100;
+  var outerR=parseInt(gval('outerR'));
+  var innerR=parseInt(gval('innerR'));
+  var pb=gval('pb');
 
   var boardBg=dm?'#2c1810':bc;
   var lineCol=h2a(lc,lo);
   var riverCol=h2a(rc2,ro);
+  var ircol=h2a(irc,iro);
+  var qcol=h2a(qc,qo);
+  var lmcol=h2a(lmc,lmo);
+  var vmcol=h2a(vmc,0.6);
+  var sgcol=h2a(sgc,sgo);
+
   var mainEl=gv('main');
   if(pb==='g')mainEl.style.background='#f0f0f0';
   else if(pb==='d')mainEl.style.background='#1a1a2e';
   else if(pb==='r')mainEl.style.background='radial-gradient(ellipse at center,#e8d5a3 0%,#b8860b 50%,#3d2b00 100%)';
   else if(pb==='b')mainEl.style.background='linear-gradient(135deg,#e8f5e9 0%,#c8e6c9 40%,#81c784 100%)';
+  else if(pb==='w')mainEl.style.background='#ffffff';
 
   var o='';
   o+='<defs>';
   o+='<radialGradient id="rg_r" cx="38%" cy="32%" r="65%">';
-  o+='<stop offset="0%" stop-color="#e8c060"/>';
-  o+='<stop offset="50%" stop-color="#a06828"/>';
-  o+='<stop offset="100%" stop-color="#3d2000"/>';
+  o+='<stop offset="0%" stop-color="'+rp1+'"/>';
+  o+='<stop offset="50%" stop-color="'+rp2+'"/>';
+  o+='<stop offset="100%" stop-color="'+rp3+'"/>';
   o+='</radialGradient>';
   o+='<radialGradient id="rg_b" cx="38%" cy="32%" r="65%">';
-  o+='<stop offset="0%" stop-color="#606060"/>';
-  o+='<stop offset="50%" stop-color="#282828"/>';
-  o+='<stop offset="100%" stop-color="#000000"/>';
+  o+='<stop offset="0%" stop-color="'+bp1+'"/>';
+  o+='<stop offset="50%" stop-color="'+bp2+'"/>';
+  o+='<stop offset="100%" stop-color="'+bp3+'"/>';
   o+='</radialGradient>';
   o+='</defs>';
 
   o+='<rect x="0" y="0" width="'+W+'" height="'+H+'" rx="6" fill="'+boardBg+'"/>';
 
   if(sf){
-    var fh=fw/2;
-    var fx=PX-SZ/2+fh, fy=PY-SZ/2+fh;
-    var fw2=(COLS-1)*SZ+SZ-fw, fh2=(ROWS-1)*SZ+SZ-fw;
+    var fhalf=fw/2;
+    var fx=PX-SZ/2+fhalf,fy=PY-SZ/2+fhalf;
+    var fw2=(COLS-1)*SZ+SZ-fw,fh2=(ROWS-1)*SZ+SZ-fw;
     o+='<rect x="'+fx+'" y="'+fy+'" width="'+fw2+'" height="'+fh2+'" rx="4" fill="none" stroke="'+fc+'" stroke-width="'+fw+'"/>';
   }
 
   if(lmOn){
-    var lmfx=px(LMF.c)-SZ/2, lmfy=py2(LMF.r)-SZ/2;
-    var lmtx=px(LMT.c)-SZ/2, lmty=py2(LMT.r)-SZ/2;
-    o+='<rect x="'+lmfx+'" y="'+lmfy+'" width="'+SZ+'" height="'+SZ+'" fill="rgba(255,210,0,0.32)" rx="3"/>';
-    o+='<rect x="'+lmtx+'" y="'+lmty+'" width="'+SZ+'" height="'+SZ+'" fill="rgba(255,210,0,0.32)" rx="3"/>';
+    var lmfx=px(LMF.c)-SZ/2,lmfy=py2(LMF.r)-SZ/2;
+    var lmtx=px(LMT.c)-SZ/2,lmty=py2(LMT.r)-SZ/2;
+    o+='<rect x="'+lmfx+'" y="'+lmfy+'" width="'+SZ+'" height="'+SZ+'" fill="'+lmcol+'" rx="3"/>';
+    o+='<rect x="'+lmtx+'" y="'+lmty+'" width="'+SZ+'" height="'+SZ+'" fill="'+lmcol+'" rx="3"/>';
   }
 
   o+='<g stroke="'+lineCol+'" stroke-width="'+lt+'" stroke-linecap="round">';
@@ -223,27 +277,28 @@ function db(){
 
   if(rtOn){
     var ry=(py2(4)+py2(5))/2;
-    o+='<text x="'+(W/2-40)+'" y="'+ry+'" text-anchor="middle" dominant-baseline="middle"';
-    o+=' font-size="'+rfs+'" fill="'+riverCol+'" font-family="serif" letter-spacing="8">\u695a\u6cb3</text>';
-    o+='<text x="'+(W/2+40)+'" y="'+ry+'" text-anchor="middle" dominant-baseline="middle"';
-    o+=' font-size="'+rfs+'" fill="'+riverCol+'" font-family="serif" letter-spacing="8">\u6f22\u754c</text>';
+    o+='<text x="'+(W/2-45)+'" y="'+ry+'" text-anchor="middle" dominant-baseline="middle"';
+    o+=' font-size="'+rfs+'" fill="'+riverCol+'" font-family="serif" letter-spacing="6">'+rtLtxt+'</text>';
+    o+='<text x="'+(W/2+45)+'" y="'+ry+'" text-anchor="middle" dominant-baseline="middle"';
+    o+=' font-size="'+rfs+'" fill="'+riverCol+'" font-family="serif" letter-spacing="6">'+rtRtxt+'</text>';
   }
 
   if(vmOn){
     for(var i=0;i<VM.length;i++){
-      o+='<circle cx="'+px(VM[i].c)+'" cy="'+py2(VM[i].r)+'" r="9" fill="rgba(80,200,80,0.6)"/>';
+      o+='<circle cx="'+px(VM[i].c)+'" cy="'+py2(VM[i].r)+'" r="9" fill="'+vmcol+'"/>';
     }
   }
 
   for(var pi=0;pi<PIECES.length;pi++){
     var p=PIECES[pi];
-    var cx=px(p.c), cy=py2(p.r);
+    var cx=px(p.c),cy=py2(p.r);
     var isSel=(SEL&&SEL.r===p.r&&SEL.c===p.c);
     var grad=p.col==='r'?'url(#rg_r)':'url(#rg_b)';
     var rimCol=p.col==='r'?rrc:brc;
+    var textCol=p.col==='r'?rtc:btc;
 
     if(sgOn&&isSel){
-      o+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(outerR+5)+'" fill="rgba(255,255,80,0.35)"/>';
+      o+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(outerR+5)+'" fill="'+sgcol+'"/>';
     }
     if(sr&&!p.up){
       o+='<circle cx="'+cx+'" cy="'+cy+'" r="'+outerR+'" fill="'+rimCol+'"/>';
@@ -251,15 +306,14 @@ function db(){
     } else {
       o+='<circle cx="'+cx+'" cy="'+cy+'" r="'+outerR+'" fill="'+grad+'"/>';
     }
-    o+='<circle cx="'+cx+'" cy="'+cy+'" r="'+innerR+'" fill="none" stroke="rgba(255,210,0,0.55)" stroke-width="1.5"/>';
+    o+='<circle cx="'+cx+'" cy="'+cy+'" r="'+innerR+'" fill="none" stroke="'+ircol+'" stroke-width="'+irt+'"/>';
     if(p.up&&p.nm){
-      var tc=p.col==='r'?'#f8e17a':'#e0e0e0';
       o+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central"';
-      o+=' font-size="'+(outerR*0.85)+'" font-family="serif" font-weight="bold" fill="'+tc+'" stroke="rgba(0,0,0,0.4)" stroke-width="0.4">';
+      o+=' font-size="'+(outerR*0.88)+'" font-family="serif" font-weight="bold" fill="'+textCol+'">';
       o+=p.nm+'</text>';
     } else if(!p.up&&qm){
       o+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central"';
-      o+=' font-size="'+(outerR*0.75)+'" font-family="serif" fill="rgba(255,255,255,0.65)">?</text>';
+      o+=' font-size="'+(outerR*0.75)+'" font-family="serif" fill="'+qcol+'">?</text>';
     }
   }
 
@@ -268,24 +322,29 @@ function db(){
   var lbl=gv('cl');
   var parts=[];
   if(sf)parts.push('Frame');
-  if(wt)parts.push('Wood');
   if(dm)parts.push('Dark');
   if(sr)parts.push('Rim');
   if(lmOn)parts.push('LastMove');
   if(vmOn)parts.push('ValidMoves');
+  if(sgOn)parts.push('Glow');
   lbl.textContent=parts.length?parts.join('+'):'Default';
 }
 
 function rst(){
-  gv('bc').value='#f5deb3';gv('wt').checked=false;gv('dm').checked=false;
+  gv('bc').value='#f5deb3';gv('dm').checked=false;
   gv('lc').value='#8b5a2b';gv('lo').value=40;sv('lv','40%');
   gv('lt').value=10;sv('ltv','1.0px');
   gv('sf').checked=true;gv('fc').value='#8b6914';gv('fw').value=8;sv('fwv','8px');
-  gv('rt').checked=true;gv('rc2').value='#8b5a2b';gv('ro').value=40;sv('rov','40%');
-  gv('rfs').value=13;sv('rfsv','13px');
+  gv('rt').checked=true;gv('rtL').value='\u695a\u6cb3';gv('rtR').value='\u6f22\u754c';
+  gv('rc2').value='#8b5a2b';gv('ro').value=40;sv('rov','40%');gv('rfs').value=13;sv('rfsv','13px');
+  gv('rp1').value='#e8c060';gv('rp2').value='#a06828';gv('rp3').value='#3d2000';gv('rtc').value='#f8e17a';
+  gv('bp1').value='#606060';gv('bp2').value='#282828';gv('bp3').value='#000000';gv('btc').value='#e0e0e0';
+  gv('irc').value='#ffd700';gv('iro').value=55;sv('irov','55%');gv('irt').value=15;sv('irtv','1.5px');
   gv('sr').checked=true;gv('rrc').value='#c0392b';gv('brc').value='#222222';
-  gv('rw').value=3;sv('rwv','3px');gv('qm').checked=true;
-  gv('lm').checked=true;gv('vm').checked=true;gv('sg').checked=true;
+  gv('rw').value=3;sv('rwv','3px');gv('qm').checked=true;gv('qc').value='#ffffff';gv('qo').value=65;sv('qov','65%');
+  gv('lm').checked=true;gv('lmc').value='#ffd200';gv('lmo').value=32;sv('lmov','32%');
+  gv('vm').checked=true;gv('vmc').value='#50c850';
+  gv('sg').checked=true;gv('sgc').value='#ffff50';gv('sgo').value=35;sv('sgov','35%');
   gv('outerR').value=22;sv('orv','22px');gv('innerR').value=18;sv('irv','18px');
   gv('pb').value='g';
   db();
@@ -293,15 +352,22 @@ function rst(){
 
 function cpCfg(){
   var cfg={
-    boardColor:gv('bc').value,woodTexture:gv('wt').checked,darkMode:gv('dm').checked,
-    lineColor:gv('lc').value,lineOpacity:+gv('lo').value,lineThickness:+(gv('lt').value/10).toFixed(1),
-    showFrame:gv('sf').checked,frameColor:gv('fc').value,frameWidth:+gv('fw').value,
-    showRiverText:gv('rt').checked,riverColor:gv('rc2').value,riverOpacity:+gv('ro').value,riverFontSize:+gv('rfs').value,
-    sideRim:gv('sr').checked,redRimColor:gv('rrc').value,blackRimColor:gv('brc').value,rimWidth:+gv('rw').value,showQuestion:gv('qm').checked,
-    lastMove:gv('lm').checked,validMoves:gv('vm').checked,selectedGlow:gv('sg').checked,
-    outerRadius:+gv('outerR').value,innerRadius:+gv('innerR').value,pageBg:gv('pb').value
+    boardColor:gval('bc'),darkMode:gcb('dm'),
+    lineColor:gval('lc'),lineOpacity:+gval('lo'),lineThickness:+(gval('lt')/10).toFixed(1),
+    showFrame:gcb('sf'),frameColor:gval('fc'),frameWidth:+gval('fw'),
+    showRiverText:gcb('rt'),riverLeft:gval('rtL'),riverRight:gval('rtR'),
+    riverColor:gval('rc2'),riverOpacity:+gval('ro'),riverFontSize:+gval('rfs'),
+    redPiece:{bright:gval('rp1'),mid:gval('rp2'),dark:gval('rp3'),textColor:gval('rtc')},
+    blackPiece:{bright:gval('bp1'),mid:gval('bp2'),dark:gval('bp3'),textColor:gval('btc')},
+    innerRing:{color:gval('irc'),opacity:+gval('iro'),thickness:+(gval('irt')/10).toFixed(1)},
+    sideRim:gcb('sr'),redRimColor:gval('rrc'),blackRimColor:gval('brc'),rimWidth:+gval('rw'),
+    showQuestion:gcb('qm'),questionColor:gval('qc'),questionOpacity:+gval('qo'),
+    lastMove:gcb('lm'),lastMoveColor:gval('lmc'),lastMoveOpacity:+gval('lmo'),
+    validMoves:gcb('vm'),validMoveColor:gval('vmc'),
+    selectedGlow:gcb('sg'),glowColor:gval('sgc'),glowOpacity:+gval('sgo'),
+    outerRadius:+gval('outerR'),innerRadius:+gval('innerR'),pageBg:gval('pb')
   };
-  navigator.clipboard.writeText(JSON.stringify(cfg,null,2)).then(function(){alert('Config copied!');});
+  navigator.clipboard.writeText(JSON.stringify(cfg,null,2)).then(function(){alert('Config copied to clipboard!');});
 }
 window.onload=function(){db();};
 </script></body></html>

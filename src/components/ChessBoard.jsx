@@ -101,7 +101,18 @@ export default function ChessBoard({
           <line x1="0" y1="130" x2="200" y2="120" stroke="rgba(0,0,0,0.015)" strokeWidth="2"/>
           <line x1="0" y1="170" x2="200" y2="165" stroke="rgba(0,0,0,0.01)" strokeWidth="1"/>
         </pattern>
-      </defs>
+              {/* Custom piece gradients */}
+        <radialGradient id="piece-red" cx="38%" cy="32%" r="62%">
+          <stop offset="0%"   stopColor="#9f9595" />
+          <stop offset="55%"  stopColor="#000000" />
+          <stop offset="100%" stopColor="#ff0000" />
+        </radialGradient>
+        <radialGradient id="piece-black" cx="38%" cy="32%" r="62%">
+          <stop offset="0%"   stopColor="#969595" />
+          <stop offset="55%"  stopColor="#000000" />
+          <stop offset="100%" stopColor="#00a2ff" />
+        </radialGradient>
+</defs>
 
       {/* Board wood grain texture */}
       <rect x="0" y="0" width="900" height="1000" fill="url(#wood-grain)" />
@@ -126,7 +137,7 @@ export default function ChessBoard({
 
         {/* ── BOARD BORDER ──────────────────────────────────────── */}
         <rect x="40" y="40" width="820" height="920" fill="none"
-          stroke={isDay ? 'rgba(100,70,20,0.7)' : 'rgba(150,120,60,0.5)'}
+          stroke='rgba(139,90,43,0.5)'
           strokeWidth="3" rx="2"
         />
 
@@ -172,14 +183,15 @@ export default function ChessBoard({
 
         {/* ── RIVER LABEL — thay bằng brand + mode ─────────────── */}
         {(() => {
-          const label = gameMode === 'innovative' ? 'Cờ Úp Pro · Nâng Cao' : 'Cờ Úp Pro · Tiêu Chuẩn';
+          const label = gameMode === 'innovative' ? 'Cải Tiến' : 'Tiêu Chuẩn';
+          const labelLeft = 'Cờ Úp Pro';
+          const labelRight = label;
           return (
-            <text x="450" y="505" textAnchor="middle" dominantBaseline="middle"
-              fontSize="24" fontWeight="600" letterSpacing="3"
-              fill={isDay ? 'rgba(100,70,20,0.38)' : 'rgba(220,180,90,0.35)'}
-              style={{ fontFamily: '"Noto Serif SC", sans-serif', userSelect: 'none' }}
-            >{label}</text>
-          );
+          <>
+          <text x="250" y={503} textAnchor="middle" dominantBaseline="middle" fontSize="12" fontWeight="600" letterSpacing="2" fill="rgba(139,90,43,0.5)">{labelLeft}</text>
+          <text x="650" y={503} textAnchor="middle" dominantBaseline="middle" fontSize="12" fontWeight="600" letterSpacing="2" fill="rgba(139,90,43,0.5)">{labelRight}</text>
+          </>
+        );
         })()}
 
         {/* ── COORDINATE LABELS ─────────────────────────────────── */}
@@ -238,13 +250,13 @@ export default function ChessBoard({
           const isFlipping    = flippingPieceId === p.id;
           const isValidTarget = validMovesSet.has(`${p.row}-${p.col}`);
 
-          const bgGrad    = isDay
-            ? (isSelected ? 'url(#piece-bg-day-selected)' : 'url(#piece-bg-day)')
-            : (isSelected ? 'url(#piece-bg-night-selected)' : 'url(#piece-bg-night)');
-          const hiddenGrad = isDay ? 'url(#piece-hidden-day)' : 'url(#piece-hidden-night)';
+          const bgGrad     = p.color === 'red'
+          ? 'url(#piece-red)'
+          : 'url(#piece-black)';
+          const hiddenGrad = p.color === 'red' ? theme.rimRed : theme.rimBlack;
 
-          const outerR    = 44;
-          const innerR    = 38;
+          const outerR     = 24;
+          const innerR     = 20;
           const outerStroke = isDay
             ? (isSelected ? '#c8a020' : isValidTarget ? '#b05030' : '#8a6828')
             : (isSelected ? '#d4a030' : isValidTarget ? '#c06040' : '#9a8848');  // sáng hơn
@@ -281,7 +293,7 @@ export default function ChessBoard({
 
               {/* Outer ring */}
               <circle cx={cx} cy={cy} r={outerR}
-                fill={p.isHidden ? hiddenGrad : bgGrad}
+                fill={bgGrad} stroke={p.isHidden ? hiddenGrad : 'none'} strokeWidth={p.isHidden ? 2 : 0}
                 stroke={outerStroke}
                 strokeWidth={outerWidth}
               />
@@ -312,14 +324,14 @@ export default function ChessBoard({
                 cx={cx} cy={cy}
                 r={26}
                 fill="none"
-                stroke={isDay ? 'rgba(120,75,18,0.45)' : 'rgba(80,48,10,0.4)'}
+                stroke='rgba(255,255,255,0.68)'
                 strokeWidth="1.8"
               />
               <circle
                 cx={cx} cy={cy}
                 r={17}
                 fill="none"
-                stroke={isDay ? 'rgba(120,75,18,0.35)' : 'rgba(80,48,10,0.32)'}
+                stroke='rgba(255,255,255,0.68)'
                 strokeWidth="1.4"
               />
               <circle
